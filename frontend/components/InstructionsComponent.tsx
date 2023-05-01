@@ -1,4 +1,4 @@
-import styles from "../styles/InstructionsComponent.module.css";
+import styles from "../styles/InstructionsComponent.module.scss";
 import Router, { useRouter } from "next/router";
 export default function InstructionsComponent() {
 	const router = useRouter();
