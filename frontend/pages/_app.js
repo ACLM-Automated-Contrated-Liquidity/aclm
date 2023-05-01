@@ -15,8 +15,10 @@ import {
 	polygonZkEvm,
 	polygonZkEvmTestnet,
 } from "wagmi/chains";
+import { ChakraProvider } from '@chakra-ui/react'
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
+import { SessionProvider } from "next-auth/react";
 import MainLayout from "../layout/mainLayout";
 import { useRouter } from "next/router";
 
@@ -58,15 +60,19 @@ function MyApp({ Component, pageProps }) {
 	});
 	return (
 		<WagmiConfig client={wagmiClient}>
-			<RainbowKitProvider
-				modalSize="compact"
-				initialChain={process.env.NEXT_PUBLIC_DEFAULT_CHAIN}
-				chains={chains}
-			>
-				<MainLayout>
-					<Component {...pageProps} />
-				</MainLayout>
-			</RainbowKitProvider>
+			<SessionProvider session={pageProps.session} refetchInterval={0}>
+				<RainbowKitProvider
+					modalSize="compact"
+					initialChain={process.env.NEXT_PUBLIC_DEFAULT_CHAIN}
+					chains={chains}
+				>
+					<ChakraProvider>
+						<MainLayout>
+							<Component {...pageProps} />
+						</MainLayout>
+					</ChakraProvider>
+				</RainbowKitProvider>
+			</SessionProvider>
 		</WagmiConfig>
 	);
 }

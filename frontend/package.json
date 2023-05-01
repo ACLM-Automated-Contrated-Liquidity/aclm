@@ -10,13 +10,21 @@
 		"marketplace": "npx create-web3-dapp marketplace"
 	},
 	"dependencies": {
+		"@chakra-ui/react": "^2.6.0",
+		"@emotion/react": "^11.10.8",
+		"@emotion/styled": "^11.10.8",
+		"@moralisweb3/next": "^2.19.0",
 		"@rainbow-me/rainbowkit": "^0.12.4",
 		"alchemy-sdk": "^2.6.2",
+		"ethers": "5.7.2",
+		"framer-motion": "^10.12.4",
+		"moralis": "^2.19.0",
 		"next": "13.1.2",
+		"next-auth": "^4.22.1",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"sass": "^1.62.1",
-		"wagmi": "^0.12.6"
+		"wagmi": "^0.12.12"
 	},
 	"devDependencies": {
 		"@types/react": "18.2.0",
