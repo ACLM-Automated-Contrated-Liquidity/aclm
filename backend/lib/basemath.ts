@@ -1,4 +1,17 @@
-interface Point {
+export interface Price {
+    timestamp: number;
+    value: number;
+  }
+  
+  export interface PriceChart {
+    tokenId: string;
+    tokenName: string;
+    currentPriceUSD: number;
+    prices: Price[];
+  }
+  
+
+export interface Point {
     x: number;
     y: number;
   }
@@ -31,6 +44,29 @@ export const divideArray = (data0: number[], data1: number[]): number[] => {
     if (isNaN(result[i])) result[i] = result[i - 1];
   });
   return result;
+};
+
+export const processPriceChartData = (
+  token0PriceChart: PriceChart | null,
+  token1PriceChart: PriceChart | null
+): Point[] => {
+  if (token0PriceChart === null || token1PriceChart === null) {
+    return [];
+  }
+
+  const points: Point[] = [];
+  const length = Math.min(
+    token0PriceChart.prices.length,
+    token1PriceChart.prices.length
+  );
+  for (let i = 0; i < length; ++i) {
+    points.push({
+      x: token0PriceChart.prices[i].timestamp,
+      y: token1PriceChart.prices[i].value / token0PriceChart.prices[i].value,
+    });
+  }
+
+  return points;
 };
 
 export const groupPricePointsMinMaxByDay = (

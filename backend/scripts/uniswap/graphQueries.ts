@@ -11,7 +11,7 @@ import {
   Tick,
   Token,
 } from "./uniswap.interface";
-import { averageArray } from "../common/math";
+import { averageArray } from "../../lib/basemath";
 
 export const getAvgTradingVolume = async (
   poolAddress: string,
