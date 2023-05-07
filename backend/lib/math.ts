@@ -201,18 +201,31 @@ export const getTokensAmountFromDepositAmountUSD = (
     ((Math.sqrt(P) - Math.sqrt(Pl)) * priceUSDY +
       (1 / Math.sqrt(P) - 1 / Math.sqrt(Pu)) * priceUSDX);
 
-  let deltaY = deltaL * (Math.sqrt(P) - Math.sqrt(Pl));
-  if (deltaY * priceUSDY < 0) deltaY = 0;
-  if (deltaY * priceUSDY > depositAmountUSD)
-    deltaY = depositAmountUSD / priceUSDY;
+  let deltaY = deltaL * (Math.sqrt(P) - Math.sqrt(Pl)) * priceUSDY;
+  if (deltaY < 0) deltaY = 0;
+  if (deltaY > depositAmountUSD) deltaY = depositAmountUSD;
 
-  let deltaX = deltaL * (1 / Math.sqrt(P) - 1 / Math.sqrt(Pu));
-  if (deltaX * priceUSDX < 0) deltaX = 0;
-  if (deltaX * priceUSDX > depositAmountUSD)
-    deltaX = depositAmountUSD / priceUSDX;
+  let deltaX = deltaL * (1 / Math.sqrt(P) - 1 / Math.sqrt(Pu)) * priceUSDX;
+  if (deltaX < 0) deltaX = 0;
+  if (deltaX > depositAmountUSD) deltaX = depositAmountUSD;
 
   return { amount0: deltaX, amount1: deltaY, liquidityDelta: deltaL };
 };
+
+export const getTokenAmountsFromDepositSimple = (  
+  P: number,
+  Pl: number,
+  Pu: number,
+  depositAmountUSD: number
+  ) => {
+    const deltaL =
+    depositAmountUSD /
+    ((2*Math.sqrt(P) - Math.sqrt(Pl)) - P / Math.sqrt(Pu));
+
+    let deltaY = deltaL * (Math.sqrt(P) - Math.sqrt(Pl));
+    let deltaX = deltaL * (1 / Math.sqrt(P) - 1 / Math.sqrt(Pu))*P;
+    return { amount0: deltaX, amount1: deltaY }
+}
 
 // for calculation detail, please visit README.md (Section: Calculation Breakdown, No. 2)
 const getLiquidityForAmount0 = (

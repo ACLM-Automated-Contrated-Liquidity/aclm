@@ -5,26 +5,6 @@ import bn from "bignumber.js";
 import { Tick } from '../scripts/uniswap/uniswap.interface';
 import { getPriceChart } from "./uniswap/coingecko";
 
-async function main() {
-    // const positions = await getPoolPositions('0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640');
-    // // console.log(positions.length);
-    // // fs.writeFileSync('positions.json', JSON.stringify(positions));
-    // const filtered = positions.filter(pos => parseInt(pos.collectedFeesToken0) > 0 || parseInt(pos.collectedFeesToken1) > 0);
-    // console.log(filtered.length);
-    // fs.writeFileSync('filtered.json', JSON.stringify(filtered));
-
-    // await getWorkingPositions();
-
-    // await aveVolume();
-
-    // await getAllTicks();
-
-    // const tick = await graph.getCurrentTick('0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640');
-    // console.log(tick);
-
-    await estimateFeeForUSDCETHPosition(1550, 2100);
-}
-
 async function getWorkingPositions() {
     const tick = await graph.getCurrentTick('0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640');
     console.log(tick);
@@ -51,7 +31,7 @@ async function getAllTicks() {
     fs.writeFileSync('ticks.json', JSON.stringify(liquidTicks));
 }
 
-async function estimateFeeForUSDCETHPosition(Pl: number, Pu: number) {
+export async function estimateFeeForUSDCETHPosition(Pl: number, Pu: number) {
     const tick = await graph.getCurrentTick('0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640');
     const P = qMath.getPriceFromTick(parseInt(tick), "6", "18");
     console.log(`Price from tick: ${P}`);
@@ -66,7 +46,7 @@ async function estimateFeeForUSDCETHPosition(Pl: number, Pu: number) {
     console.log(`Price chart: ${JSON.stringify(priceChart1)}`);
     const P1USD = priceChart1?.currentPriceUSD || 1850;
 
-    const { amount0, amount1 } = qMath.getTokensAmountFromDepositAmountUSD(P, Pl, Pu, P0USD, P1USD, 1000);
+    const { amount0, amount1 } = qMath.getTokensAmountFromDepositAmountUSD(P, Pl, Pu, P1USD, P0USD, 1000);
     console.log(`Amount0: ${amount0}; Amount1: ${amount1}`);
     const liquidityDelta = qMath.getLiquidityDelta(P, Pl, Pu, amount0, amount1, 6, 18);
     console.log(`liquidityDelta: ${liquidityDelta}`);
@@ -81,7 +61,3 @@ async function estimateFeeForUSDCETHPosition(Pl: number, Pu: number) {
 }
 
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});

@@ -9,5 +9,5 @@
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "include": ["scripts/**/*", "common/**/*", "pools/**/*", "**/*"]
+  "include": ["scripts/**/*", "common/**/*", "pools/**/*", "**/*", "lib/**/*"]
 }
