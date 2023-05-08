@@ -22,7 +22,7 @@ export const getCoingeckoToken = (contractAddress: string): Token | null => {
   return null;
 };
 
-enum QueryPeriodEnum {
+export enum QueryPeriodEnum {
   ONE_DAY = "1",
   ONE_WEEK = "7",
   ONE_MONTH = "30",
