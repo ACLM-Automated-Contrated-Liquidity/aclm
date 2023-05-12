@@ -42,7 +42,10 @@ export class PoolsRoutes extends CommonRoutesConfig {
                     body.deposit
                 )
                     .then((result) => res.status(200).json({ feeUSD: result }))
-                    .catch((err) => res.status(500).send(err))
+                    .catch((err) => {
+                        debugLog(err)
+                        res.status(500).send(err)
+                    })
             })
 
         return this.app

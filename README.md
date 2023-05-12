@@ -13,6 +13,17 @@ npm run start
 watch for
 `Server running at http://localhost:3000` message
 
+### Run with different network
+
+By default network is Ethereum.
+List of supported networks is [here](/backend/src/common/networks.ts)
+
+To run with other network just pass the name as parameter. Example
+
+```
+npm run start bnb
+```
+
 ### Estimate fee for a position
 
 First need to prepare contract addresses for both tokens and eval price of token1 / token0
@@ -20,5 +31,5 @@ First need to prepare contract addresses for both tokens and eval price of token
 Then send post like an example:
 
 ```
-curl -XPOST -H "Content-Type: application/json" "localhost:3000/pools/estimatePositionFee" -d '{"token0": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", "token1": "0x514910771af9ca656af840dff83e8264ecf986ca", "priceLower": 0.0002675857, "priceUpper": 0.0003129959, "deposit": 1000}'
+curl -XPOST -H "Content-Type: application/json" "localhost:3000/pools/estimatePositionFee" -d '{"token0": "0x55d398326f99059ff775485246999027b3197955", "token1": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c", "priceLower": 302.087, "priceUpper": 311.909, "deposit": 320}'
 ```

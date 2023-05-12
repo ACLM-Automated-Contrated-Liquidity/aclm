@@ -1,3 +1,4 @@
+import { string } from "hardhat/internal/core/params/argumentTypes"
 import { Network } from "../interfaces/uniswap.interface"
 
 // https://github.com/Uniswap/interface/blob/main/src/constants/chains.ts
@@ -21,8 +22,8 @@ enum SupportedChainId {
 }
 
 // NOTE: also update CreatePositionModal, isNative function.
-export const NETWORKS: Network[] = [
-    {
+export const NETWORKS: { [k: string]: Network } = {
+    ethereum: {
         id: "ethereum",
         chainId: SupportedChainId.MAINNET,
         name: "Ethereum",
@@ -32,7 +33,7 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 1000000,
         volumeUSD_gte: 500000,
     },
-    {
+    polygon: {
         id: "polygon",
         chainId: SupportedChainId.POLYGON,
         name: "Polygon",
@@ -43,7 +44,7 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 100000,
         volumeUSD_gte: 50000,
     },
-    {
+    optimism: {
         id: "optimism",
         chainId: SupportedChainId.OPTIMISM,
         name: "Optimism",
@@ -54,7 +55,7 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 1000000,
         volumeUSD_gte: 500000,
     },
-    {
+    celo: {
         id: "celo",
         chainId: SupportedChainId.CELO,
         name: "Celo",
@@ -66,7 +67,7 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 10000,
         volumeUSD_gte: 1000,
     },
-    {
+    arbitrum: {
         id: "arbitrum",
         chainId: SupportedChainId.ARBITRUM_ONE,
         name: "Arbitrum",
@@ -83,7 +84,7 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 0,
         volumeUSD_gte: 0,
     },
-    {
+    bnb: {
         id: "bnb",
         chainId: SupportedChainId.BNB,
         name: "BNB Chain",
@@ -95,14 +96,16 @@ export const NETWORKS: Network[] = [
         totalValueLockedUSD_gte: 100000,
         volumeUSD_gte: 50000,
     },
-]
+}
 
-let currentNetwork = NETWORKS[0]
+let currentNetwork = NETWORKS.ethereum
 
 export const getCurrentNetwork = (): Network => {
     return currentNetwork
 }
 
-export const setCurrentNetwork = (network: Network) => {
-    currentNetwork = network
+export const setCurrentNetwork = (network: string) => {
+    if (!NETWORKS[network]) throw new Error(`Network ${network} is not supported!`)
+
+    currentNetwork = NETWORKS[network]
 }
