@@ -3,7 +3,6 @@ import express from "express"
 import fs from "fs"
 import { Pool } from "../interfaces/uniswap.interface"
 import debug from "debug"
-import { estimateFeeForUSDCETHPosition } from "../backtest"
 import { estimateFee } from "./poolService"
 
 const debugLog: debug.IDebugger = debug("pools")

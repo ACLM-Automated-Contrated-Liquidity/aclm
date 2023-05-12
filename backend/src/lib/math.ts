@@ -106,12 +106,12 @@ export const getTickFromPrice = (
 
 export const getPriceFromTick = (
     tick: number,
-    token0Decimal: string,
-    token1Decimal: string
+    token0Decimal: number,
+    token1Decimal: number
 ): number => {
     const sqrtPrice = new bn(Math.pow(Math.sqrt(1.0001), tick)).multipliedBy(new bn(2).pow(96))
-    const token0 = expandDecimals(1, Number(token0Decimal))
-    const token1 = expandDecimals(1, Number(token1Decimal))
+    const token0 = expandDecimals(1, token0Decimal)
+    const token1 = expandDecimals(1, token1Decimal)
     const L2 = mulDiv(encodeSqrtPriceX96(token0), encodeSqrtPriceX96(token1), Q96)
     const price = mulDiv(L2, Q96, sqrtPrice)
         .div(new bn(2).pow(96))
