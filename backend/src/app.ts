@@ -11,8 +11,9 @@ import { NETWORKS, setCurrentNetwork } from "./common/networks"
 
 const args: Record<string, string> = {};
 process.argv.forEach(val => {
-    if (val.includes('=')) {
-        let [key, value] = val.split('=');
+    if (val.includes("=")) {
+        let [key, value] = val.split("=");
+        key = key.startsWith("--") ? key.slice(2) : key;
         args[key] = value;
     }
 });

@@ -13,7 +13,7 @@ npm run start
 watch for
 `Server running at http://localhost:3000` message
 
-Use `nmp run start -- port=<your-port>` to start server on arbitrary port.
+Use `nmp run start port=<your-port>` to start server on arbitrary port.
 
 ### Run with different network
 
@@ -23,7 +23,7 @@ List of supported networks is [here](/backend/src/common/networks.ts)
 To run with other network just pass the name as parameter. Example
 
 ```
-npm run start -- network=bnb
+npm run start network=bnb
 ```
 
 ### Estimate fee for a position
