@@ -96,56 +96,6 @@ export default function PriceSimulation() {
                 </Flex>
             </div>
 
-            {/*<div>*/}
-            {/*    <div className='label'>Current price:</div>*/}
-            {/*    <Slider*/}
-            {/*        min={1000}*/}
-            {/*        max={4000}*/}
-            {/*        value={pc}*/}
-            {/*        onChange={(val) => onStateChange(p1, p2, val, nHedge)}*/}
-            {/*    >*/}
-            {/*        <SliderTrack>*/}
-            {/*            <SliderFilledTrack />*/}
-            {/*        </SliderTrack>*/}
-            {/*        <SliderThumb />*/}
-            {/*    </Slider>*/}
-
-            {/*    <Input placehoder='Value from' value={pc} readOnly={true}/>*/}
-            {/*</div>*/}
-
-            {/*<div>*/}
-            {/*    <div className='label'>Tokens to hedge:</div>*/}
-            {/*    <Slider*/}
-            {/*        min={0}*/}
-            {/*        max={0.1}*/}
-            {/*        step={0.01}*/}
-            {/*        value={nHedge}*/}
-            {/*        onChange={(val) => onStateChange(p1, p2, pc, val)}*/}
-            {/*    >*/}
-            {/*        <SliderTrack>*/}
-            {/*            <SliderFilledTrack />*/}
-            {/*        </SliderTrack>*/}
-            {/*        <SliderThumb />*/}
-            {/*    </Slider>*/}
-
-            {/*    <Input placehoder='Value from' value={nHedge} readOnly={true}/>*/}
-            {/*</div>*/}
-
-            {/*<FormControl>*/}
-            {/*    <FormLabel>ETH:</FormLabel>*/}
-            {/*    <Input value={nEth}></Input>*/}
-            {/*</FormControl>*/}
-
-            {/*<FormControl>*/}
-            {/*    <FormLabel>USDT:</FormLabel>*/}
-            {/*    <Input value={nUsdt}></Input>*/}
-            {/*</FormControl>*/}
-
-            {/*<FormControl>*/}
-            {/*    <FormLabel>Impermanent loss:</FormLabel>*/}
-            {/*    <Input value={il}></Input>*/}
-            {/*</FormControl>*/}
-
             {/*<BalanceChart p1={p1} p2={p2} pc={pc} nHedge={nHedge}></BalanceChart>*/}
             <LiquidityChart p1={p1} p2={p2} nHedge={nHedge} investedSum={1000}></LiquidityChart>
         </div>

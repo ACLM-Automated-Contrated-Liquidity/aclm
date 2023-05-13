@@ -12,6 +12,8 @@
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -25,5 +27,8 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "types": [
+    "reflect-metadata"
+  ],
 }

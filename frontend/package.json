@@ -13,10 +13,14 @@
 		"@chakra-ui/react": "^2.6.0",
 		"@emotion/react": "^11.10.8",
 		"@emotion/styled": "^11.10.8",
+		"@fortawesome/fontawesome-svg-core": "^6.4.0",
+		"@fortawesome/free-regular-svg-icons": "^6.4.0",
+		"@fortawesome/react-fontawesome": "^0.2.0",
 		"@moralisweb3/next": "^2.19.0",
 		"@rainbow-me/rainbowkit": "^0.12.4",
 		"alchemy-sdk": "^2.6.2",
 		"axios": "^1.4.0",
+		"cryptocurrency-icons": "^0.18.1",
 		"ethers": "5.7.2",
 		"framer-motion": "^10.12.4",
 		"moralis": "^2.19.0",
@@ -34,6 +38,7 @@
 		"@types/react-vis": "^1.11.11",
 		"eslint": "8.36.0",
 		"eslint-config-next": "13.2.4",
+		"reflect-metadata": "0.1.13",
 		"typescript": "5.0.4"
 	}
 }

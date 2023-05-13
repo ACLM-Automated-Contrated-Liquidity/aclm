@@ -9,9 +9,19 @@ import { PoolsRoutes } from "./pools/pools.routes.config"
 import debug from "debug"
 import { NETWORKS, setCurrentNetwork } from "./common/networks"
 
+const args: Record<string, string> = {};
+process.argv.forEach(val => {
+    if (val.includes('=')) {
+        let [key, value] = val.split('=');
+        args[key] = value;
+    }
+});
+
+console.log(`Script starting with arguments: ${JSON.stringify(args)}`);
+
 const app: express.Application = express()
 const server: http.Server = http.createServer(app)
-const port = 3000
+const port = args.port || 3000
 const routes: Array<CommonRoutesConfig> = []
 const debugLog: debug.IDebugger = debug("app")
 
@@ -36,7 +46,7 @@ if (!process.env.DEBUG) {
     loggerOptions.meta = false // when not debugging, log requests as one-liners
 }
 
-const network = process.argv[2]
+const network = args.network || NETWORKS.ethereum.id;
 setCurrentNetwork(network)
 debugLog(`Set network to: ${network}`)
 
