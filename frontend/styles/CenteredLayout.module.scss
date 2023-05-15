@@ -1,0 +1,32 @@
+$main-color: #6c5dd3;
+$background-color: #f2f4fe;
+$border-radius: 16px;
+$width: 1100px;
+
+.page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+
+  background: $background-color;
+
+  b {
+    font-size: 16px;
+  }
+  h1 {
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 0;
+  }
+}
+
+.header {
+  width: $width;
+}
+
+.pageContent {
+  width: $width;
+}

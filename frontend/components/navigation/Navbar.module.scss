@@ -1,0 +1,29 @@
+$main-color: #6C5DD3FF;
+
+.navbar {
+  padding: 24px 0;
+
+  button {
+    //--rk-colors-accentColor: var($main-color);
+    //background: $main-color !important;
+    //border-radius: 8px;
+  }
+}
+
+.connectButton button {
+  background: $main-color;
+}
+
+.navItems {
+  & > p {
+    font-weight: 600;
+
+    &:hover {
+      color: $main-color;
+    }
+  }
+
+  & > p + p {
+    padding-left: 24px;
+  }
+}

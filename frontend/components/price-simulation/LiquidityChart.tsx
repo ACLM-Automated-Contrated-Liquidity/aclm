@@ -10,6 +10,7 @@ import {
     XYPlot,
     YAxis
 } from 'react-vis';
+import {Box} from '@chakra-ui/react';
 
 export interface LiquidityChartProps {
     p1: number;
@@ -91,15 +92,17 @@ export class LiquidityChart extends Component<LiquidityChartProps, LiquidityChar
 
     render() {
         return (
-            <XYPlot width={400} height={300} stackBy="y">
-                <VerticalGridLines />
-                <HorizontalGridLines />
-                <XAxis tickLabelAngle={-90}/>
-                <YAxis />
-                <VerticalBarSeries data={this.state.token1} onValueMouseOver={this.setTooltipValue()}/>
-                <VerticalBarSeries data={this.state.token2} onValueMouseOver={this.setTooltipValue()}/>
-                {this.state.tooltipValue ? <Hint value={this.state.tooltipValue} /> : null}
-            </XYPlot>
+            <Box style={{position: 'relative'}}>
+                <XYPlot width={400} height={300} stackBy="y">
+                    <VerticalGridLines />
+                    <HorizontalGridLines />
+                    <XAxis tickLabelAngle={-90}/>
+                    <YAxis />
+                    <VerticalBarSeries data={this.state.token1} onValueMouseOver={this.setTooltipValue()}/>
+                    <VerticalBarSeries data={this.state.token2} onValueMouseOver={this.setTooltipValue()}/>
+                    {this.state.tooltipValue ? <Hint value={this.state.tooltipValue} /> : null}
+                </XYPlot>
+            </Box>
         );
     }
 }

@@ -1,11 +1,11 @@
 import styles from "../styles/Home.module.scss";
-import InstructionsComponent from "../components/InstructionsComponent";
+import AppComponent from '../components/app/AppComponent';
 
 export default function Home() {
   return (
     <div>
       <main className={styles.main}>
-        <InstructionsComponent></InstructionsComponent>
+        <AppComponent></AppComponent>
       </main>
     </div>
   );

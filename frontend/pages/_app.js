@@ -21,6 +21,7 @@ import { publicProvider } from "wagmi/providers/public";
 import { SessionProvider } from "next-auth/react";
 import MainLayout from "../layout/mainLayout";
 import { useRouter } from "next/router";
+import CenteredLayout from "../layout/centeredLayout";
 
 const { chains, provider } = configureChains(
 	[
@@ -67,9 +68,9 @@ function MyApp({ Component, pageProps }) {
 					chains={chains}
 				>
 					<ChakraProvider>
-						<MainLayout>
+						<CenteredLayout>
 							<Component {...pageProps} />
-						</MainLayout>
+						</CenteredLayout>
 					</ChakraProvider>
 				</RainbowKitProvider>
 			</SessionProvider>

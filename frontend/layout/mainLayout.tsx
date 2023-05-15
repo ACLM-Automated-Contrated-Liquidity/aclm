@@ -29,28 +29,9 @@ export default function MainLayout({ children }) {
 				{sidePanelItems}
 			</div>
 			<div className={styles.body}>
-				<Flex className={styles.header} alignItems='center'>
-					<Flex direction='column'>
-						<b>Hi Kirill</b>
-						<h1>Welcome back &#128075;</h1>
-					</Flex>
-
-					<Flex>
-						<input placeholder='Search'></input>
-						<div className={styles.icon}></div>
-					</Flex>
-				</Flex>
+				<Navbar />
 
 				<div className={styles.pageContent}>
-					<div className={styles.banner}>
-						<FontAwesomeIcon className={styles.closeIcon} icon={faXmarkCircle} />
-						<Flex direction='column' justifyContent='center'>
-							<h1>Dashboard</h1>
-							<div>Unleash the power of concentrated liquidity</div>
-							<button className={styles.button} onClick={getData}>Get started</button>
-						</Flex>
-						<div className={styles.image}></div>
-					</div>
 					{children}
 				</div>
 			</div>

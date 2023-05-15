@@ -2,89 +2,65 @@ import styles from "./App.module.scss";
 import PanelComponent from '../PanelComponent';
 import usdc from "node_modules/cryptocurrency-icons/svg/color/usdc.svg";
 import eth from "node_modules/cryptocurrency-icons/svg/color/eth.svg";
-import {Button, Flex, FormControl, FormLabel, Input, useDisclosure} from '@chakra-ui/react';
-import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
-} from '@chakra-ui/react'
+import {Box, Flex, useBoolean, useDisclosure} from '@chakra-ui/react';
 import {useState} from 'react';
-import {LiquidityChart} from '../price-simulation/LiquidityChart';
-import {BalanceChart} from '../price-simulation/BalanceChart';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {faXmarkCircle} from '@fortawesome/free-regular-svg-icons';
+import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
 
 export default function AppComponent() {
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const {deposit, setDeposit} = useState(0);
+    const {showBanner, setShowBanner} = useBoolean(true);
+    const [val, setVal] = useState(false);
+    const {isOpen, onOpen} = useDisclosure();
 
     return (
-        <PanelComponent className={styles.container}>
-            <b style={{display: 'block', padding: '16px'}}>Available pools</b>
-
-            {[...Array(5)].map((x, i) =>
-                <Flex key={i} className={styles.row} onClick={onOpen}>
-                    <div>
-                        <Flex className={styles.logo}>
-                            <div className={styles.icon} style={{backgroundImage: `url(${usdc.src})`}}></div>
-                            <div className={styles.icon} style={{backgroundImage: `url(${eth.src})`}}></div>
-                        </Flex>
-                    </div>
-
-                    <div>
-                        <b>ETH-USDC-LP</b>
-                        <div>Stablecoin pair</div>
-                    </div>
-
-                    <Flex flex={1} justifyContent='flex-end'>54%</Flex>
+        <Box width="100%">
+            <Flex className={styles.header} alignItems='center' marginBottom='24px'>
+                <Flex direction='column'>
+                    <b>Hi Kirill</b>
+                    <h1>Welcome back &#128075;</h1>
                 </Flex>
-            )}
+            </Flex>
+            {!showBanner &&
+                <Box className={styles.banner} marginBottom='24px'>
+                    <FontAwesomeIcon
+                        className={styles.closeIcon}
+                        icon={faXmarkCircle}
+                        onClick={setShowBanner?.toggle}
+                    />
 
-            <Modal isOpen={isOpen}
-                   onClose={onClose}
-                   motionPreset='scale'
-                   size='xl'
-                   isCentered
-            >
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Create LP position</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <FormControl>
-                            <FormLabel>Deposit amount</FormLabel>
-                            <Input
-                                defaultValue={1000}
-                                value={deposit}
-                                onChange={(val) => setDeposit(val)}></Input>
-                        </FormControl>
+                    <Flex direction='column' justifyContent='center'>
+                        <h1>Dashboard</h1>
+                        <div>Unleash the power of concentrated liquidity</div>
+                        <button className={styles.button}>Get started</button>
+                    </Flex>
+                    <div className={styles.image}></div>
+                </Box>
+            }
 
-                        <Flex style={{marginTop: '16px'}}>
-                            <FormControl>
-                                <FormLabel>Min bound</FormLabel>
-                                <Input defaultValue={1800} value={deposit}></Input>
-                            </FormControl>
+            <PanelComponent className={styles.container}>
+                <b style={{display: 'block', padding: '16px'}}>Available pools</b>
 
-                            <FormControl style={{marginLeft: '16px'}}>
-                                <FormLabel>Max amount</FormLabel>
-                                <Input defaultValue={2000} value={deposit}></Input>
-                            </FormControl>
-                        </Flex>
+                {[...Array(5)].map((x, i) =>
+                    <Flex key={i} className={styles.row} onClick={() => setVal(true)}>
+                        <div>
+                            <Flex className={styles.logo}>
+                                <div className={styles.icon} style={{backgroundImage: `url(${usdc.src})`}}></div>
+                                <div className={styles.icon} style={{backgroundImage: `url(${eth.src})`}}></div>
+                            </Flex>
+                        </div>
 
-                        {/*<LiquidityChart p1={1800} p2={2000} nHedge={0} investedSum={1000}></LiquidityChart>*/}
-                        <BalanceChart p1={deposit} p2={2000} pc={1850} nHedge={0}></BalanceChart>
-                    </ModalBody>
+                        <div>
+                            <b>ETH-USDC-LP</b>
+                            <div>Stablecoin pair</div>
+                        </div>
 
-                    <ModalFooter>
-                        <Button colorScheme='blue' mr={3} onClick={onClose}>
-                            Close
-                        </Button>
-                        <Button variant='ghost'>Secondary Action</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </PanelComponent>
+                        <Flex flex={1} justifyContent='flex-end'>54%</Flex>
+                    </Flex>
+                )}
+            </PanelComponent>
+
+            <CreatePositionWindow isOpen={val}></CreatePositionWindow>
+        </Box>
     );
 }
