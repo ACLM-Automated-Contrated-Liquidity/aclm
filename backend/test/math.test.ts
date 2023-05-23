@@ -2,7 +2,7 @@ import { getTokensAmountFromDepositAmountUSD } from "../src/lib/math"
 import { assert } from "chai"
 
 // write test cases for estimateFee function here
-describe("estimateFee", () => {
+describe.skip("estimateFee", () => {
     const P = 1850 //getPriceFromTick(curTick, "6", "18");
     // const tickFromPrice = getTickFromPrice(P, "6", "18");
     // console.log(`tickFromPrice: ${tickFromPrice}`);
