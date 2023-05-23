@@ -7,11 +7,13 @@ import {useState} from 'react';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faXmarkCircle} from '@fortawesome/free-regular-svg-icons';
 import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
+import {useRouter} from 'next/router';
 
 export default function AppComponent() {
     const {showBanner, setShowBanner} = useBoolean(true);
-    const [val, setVal] = useState(false);
+    const [showWindow, setShowWindow] = useState(false);
     const {isOpen, onOpen} = useDisclosure();
+    const router = useRouter();
 
     return (
         <Box width="100%">
@@ -42,7 +44,7 @@ export default function AppComponent() {
                 <b style={{display: 'block', padding: '16px'}}>Available pools</b>
 
                 {[...Array(5)].map((x, i) =>
-                    <Flex key={i} className={styles.row} onClick={() => setVal(true)}>
+                    <Flex key={i} className={styles.row} onClick={() => router.push('/create-position')}>
                         <div>
                             <Flex className={styles.logo}>
                                 <div className={styles.icon} style={{backgroundImage: `url(${usdc.src})`}}></div>
@@ -60,7 +62,7 @@ export default function AppComponent() {
                 )}
             </PanelComponent>
 
-            <CreatePositionWindow isOpen={val}></CreatePositionWindow>
+            <CreatePositionWindow isOpen={showWindow}></CreatePositionWindow>
         </Box>
     );
 }

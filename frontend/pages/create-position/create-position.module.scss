@@ -1,0 +1,97 @@
+.backButton {
+  height: 36px;
+  cursor: pointer;
+
+  p {
+    margin-left: 8px;
+  }
+
+  &:hover {
+    font-size: 16px;
+  }
+}
+
+.footer {
+  align-items: center;
+  //flex-direction: row-reverse;
+  justify-content: end;
+}
+
+.image1 {
+  width: 500px;
+  height: 500px;
+  background-image: url("../../public/step_1.webp");
+  background-size: cover;
+}
+
+.panel {
+  padding: 32px !important;
+  overflow: hidden;
+}
+
+.chart {
+  margin-left: -100px;
+
+  path {
+    fill: none;
+    stroke: #453899 !important;
+    stroke-width: 2px;
+  }
+}
+
+.gradient1 {
+  position: absolute;
+  left: -10%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(90deg, white, transparent);
+  animation: move1 4s ease-in-out infinite alternate;
+  z-index: 10;
+}
+
+.gradient2 {
+  position: absolute;
+  left: 20%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(270deg, white, white, transparent);
+  animation: move2 4s ease-in-out infinite alternate;
+}
+
+.fill1 {
+  position: absolute;
+  left: -10%;
+  width: 0;
+  height: 100%;
+  background: white;
+  animation: fill1 4s ease-in-out infinite alternate;
+}
+
+.fill2 {
+  position: absolute;
+  right: 0;
+  width: 60%;
+  height: 100%;
+  background: white;
+  animation: fill2 4s ease-in-out infinite alternate;
+}
+
+@keyframes move1 {
+  from {left: -10%}
+  to {left: 80%}
+}
+
+@keyframes move2 {
+  from {left: 20%}
+  to {left: 90%}
+}
+
+@keyframes fill1 {
+  from {width: 0}
+  to {width: 90%}
+}
+
+@keyframes fill2 {
+  from {width: 60%}
+  to {width: 0%}
+}

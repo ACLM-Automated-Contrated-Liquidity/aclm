@@ -23,7 +23,8 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "../backend/src/coingecko/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

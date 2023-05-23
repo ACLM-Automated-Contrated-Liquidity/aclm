@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     Flex,
     FormControl,
@@ -9,8 +10,9 @@ import {
     ModalHeader,
     ModalOverlay, useDisclosure
 } from '@chakra-ui/react';
-import {BalanceChart} from '../../price-simulation/BalanceChart';
-import {useEffect, useState} from 'react';
+import 'react-vis/dist/style.css';
+import React, {useEffect, useState} from 'react';
+import {HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis} from 'react-vis';
 
 interface CreatePositionProps {
     isOpen: boolean;
@@ -19,10 +21,16 @@ interface CreatePositionProps {
 export default function CreatePositionWindow(props: CreatePositionProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {deposit, setDeposit} = useState(0);
+    const [showChart, setShowChart] = useState(false);
 
     useEffect(() => {
         props.isOpen ? onOpen() : onClose();
     }, [props.isOpen]);
+
+    let data = [];
+    for (let i = 0; i< 100; i++) {
+        data.push({x: i, y: 10 * Math.log(i)});
+    }
 
     return (
         <Modal isOpen={isOpen}
@@ -36,35 +44,47 @@ export default function CreatePositionWindow(props: CreatePositionProps) {
                 <ModalHeader>Create LP position</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <FormControl>
-                        <FormLabel>Deposit amount</FormLabel>
-                        <Input
-                            defaultValue={1000}
-                            value={deposit}
-                            onChange={(val) => setDeposit(val)}></Input>
-                    </FormControl>
+                    <Flex>
+                        <Box>
+                            <FormControl>
+                                <FormLabel>Deposit amount</FormLabel>
+                                <Input
+                                    defaultValue={1000}
+                                    value={deposit}
+                                    onChange={(val) => setDeposit(val)}></Input>
+                            </FormControl>
 
-                    <Flex style={{marginTop: '16px'}}>
-                        <FormControl>
-                            <FormLabel>Min bound</FormLabel>
-                            <Input defaultValue={1800} value={deposit}></Input>
-                        </FormControl>
+                            <Flex style={{marginTop: '16px'}}>
+                                <FormControl>
+                                    <FormLabel>Min bound</FormLabel>
+                                    <Input defaultValue={1800} value={deposit}></Input>
+                                </FormControl>
 
-                        <FormControl style={{marginLeft: '16px'}}>
-                            <FormLabel>Max amount</FormLabel>
-                            <Input defaultValue={2000} value={deposit}></Input>
-                        </FormControl>
+                                <FormControl style={{marginLeft: '16px'}}>
+                                    <FormLabel>Max amount</FormLabel>
+                                    <Input defaultValue={2000} value={deposit}></Input>
+                                </FormControl>
+                            </Flex>
+                        </Box>
+
+                        {
+                            showChart &&
+                            <XYPlot width={400} height={300}>
+                                <VerticalGridLines />
+                                <HorizontalGridLines />
+                                <XAxis tickLabelAngle={90}/>
+                                <YAxis />
+                                <LineSeries data={data} />
+                            </XYPlot>
+                        }
                     </Flex>
-
-                    {/*<LiquidityChart p1={1800} p2={2000} nHedge={0} investedSum={1000}></LiquidityChart>*/}
-                    <BalanceChart p1={deposit} p2={2000} pc={1850} nHedge={0}></BalanceChart>
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme='blue' mr={3} onClick={onClose}>
-                        Close
+                    <Button colorScheme='blue' mr={3} onClick={() => setShowChart(true)}>
+                        Simulate
                     </Button>
-                    <Button variant='ghost'>Secondary Action</Button>
+                    <Button variant='ghost'>Open position</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
