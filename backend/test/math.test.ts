@@ -8,7 +8,7 @@ describe.skip("estimateFee", () => {
     // console.log(`tickFromPrice: ${tickFromPrice}`);
     const Pl = 1750
     const Pu = 1950
-    console.log(`price: ${P}; price lower: ${Pl}; price upper: ${Pu}`)
+    // console.log(`price: ${P}; price lower: ${Pl}; price upper: ${Pu}`)
     const deposit = 1000
 
     it("should split in almost halves", () => {
