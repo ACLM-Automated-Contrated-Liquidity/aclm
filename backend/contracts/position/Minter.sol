@@ -16,9 +16,13 @@ abstract contract Minter is IERC721Receiver {
 
     struct Deposit {
         address owner;
+        int24 tickLower;
+        int24 tickUpper;
         uint128 liquidity;
         address token0;
         address token1;
+        uint amount0;
+        uint amount1;
     }
 
     uint256[] public tokenIds;
@@ -36,18 +40,6 @@ abstract contract Minter is IERC721Receiver {
             toMint.amount0Desired,
             toMint.amount1Desired
         );
-        // TransferHelper.safeTransferFrom(
-        //     toMint.token0,
-        //     msg.sender,
-        //     address(this),
-        //     toMint.amount0Desired
-        // );
-        // TransferHelper.safeTransferFrom(
-        //     toMint.token1,
-        //     msg.sender,
-        //     address(this),
-        //     toMint.amount1Desired
-        // );
 
         // Approve the position manager
         TransferHelper.safeApprove(
@@ -83,6 +75,7 @@ abstract contract Minter is IERC721Receiver {
             nonfungiblePositionManager
         ).mint(params);
         console.log("Minted position: %s, %s, %s", tokenId, amount0, amount1);
+        _createDeposit(toMint.holder, tokenId, amount0, amount1);
 
         // Remove allowance and refund in both assets.
         // if (amount0 < toMint.amount0Desired) {
@@ -107,19 +100,20 @@ abstract contract Minter is IERC721Receiver {
         bytes calldata
     ) external override returns (bytes4) {
         require(msg.sender == nonfungiblePositionManager, "not a univ3 nft");
-        _createDeposit(operator, tokenId);
+        console.log("Received LP token: %s; %s", operator, tokenId);
+        _createDeposit(operator, tokenId, 0, 0);
         return this.onERC721Received.selector;
     }
 
-    function _createDeposit(address owner, uint256 tokenId) internal {
+    function _createDeposit(address owner, uint tokenId, uint amount0, uint amount1) internal {
         (
             ,
             ,
             address token0,
             address token1,
             ,
-            ,
-            ,
+            int24 tickLower,
+            int24 tickUpper,
             uint128 liquidity,
             ,
             ,
@@ -129,9 +123,13 @@ abstract contract Minter is IERC721Receiver {
         // set the owner and data for position
         deposits[tokenId] = Deposit({
             owner: owner,
+            tickLower: tickLower,
+            tickUpper: tickUpper,
             liquidity: liquidity,
             token0: token0,
-            token1: token1
+            token1: token1,
+            amount0: amount0,
+            amount1: amount1
         });
     }
 }

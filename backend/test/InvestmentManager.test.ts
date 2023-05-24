@@ -29,8 +29,8 @@ developmentChains.includes(network.name)
               const positions = await manager.getPositions()
               console.log(`Positions: ${positions}`)
               expect(positions.length).to.equal(1)
-              //   expect(token).to.equal(weth)
-              //   expect(amount).to.equal(ethers.utils.parseEther("1"))
+              const info = await manager.getPositionInfo(positions[0])
+              console.log(`Position info: ${JSON.stringify(info)}`)
           })
 
           //   describe("withdraw checks", function () {

@@ -60,26 +60,20 @@ contract InvestmentManager is Minter {
         _wrap(msg.sender, depAmount);
         uint256 wrappedBalance = IERC20(nativeWrapperContract).balanceOf(address(this));
         console.log("wrapped balance of contract: %s", wrappedBalance);
-        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken, depAmount);
-        console.log("Position: %s; %s", pos.amount0Desired, pos.amount1Desired);
-        uint amountOut = _swapForPosition(pos);
+        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken);
+        // console.log("Position: %s; %s", pos.amount0Desired, pos.amount1Desired);
+        uint amountIn = depAmount / 2; // Might be more complicated than that.
+        uint amountOut = _swapForPosition(pos, amountIn);
         if (pos.nativeFirst) {
+            pos.amount0Desired = amountIn;
             pos.amount1Desired = amountOut;
         } else {
             pos.amount0Desired = amountOut;
+            pos.amount1Desired = amountIn;
         }
         pos.holder = msg.sender;
         uint256 otherBalance = IERC20(otherToken).balanceOf(address(this));
         console.log("swapped token balance of contract: %s", otherBalance);
-        // check if have enough balance for position
-        // uint amount0ToMint = pos.amount0Desired;
-        // if (amount0ToMint > investments[msg.sender].amount) {
-        //     pos.amount0Desired = investments[msg.sender].amount;
-        // }
-        // uint amount1ToMint = pos.amount1Desired;
-        // if (amount1ToMint > amountOut) {
-        //     pos.amount1Desired = amountOut;
-        // }
         (uint tokenId, , , ) = newPosition(pos);
         uint[] storage toks = tokensByOwner[msg.sender];
         toks.push(tokenId);
@@ -125,12 +119,10 @@ contract InvestmentManager is Minter {
         dep.amount -= amount;
     }
 
-    function _swapForPosition(Position memory calculated) internal returns (uint amountOut) {
-        // uint depositAmount = investments[calculated.holder].amount;
-        // uint amountIn = depositAmount - calculated.amount0Desired;
-        uint amountIn = calculated.nativeFirst
-            ? calculated.amount0Desired
-            : calculated.amount1Desired;
+    function _swapForPosition(
+        Position memory calculated,
+        uint amountIn
+    ) internal returns (uint amountOut) {
         console.log("Swap amount in: %s", amountIn);
         TransferHelper.safeApprove(nativeWrapperContract, address(swapRouter), amountIn);
         uint256 minOut = /* Calculate min output */ 0;
@@ -150,11 +142,15 @@ contract InvestmentManager is Minter {
         console.log("amount out: ", amountOut);
     }
 
-    function validatePosition() external {}
+    // function validatePosition() external {}
 
-    function updatePosition() external {}
+    // function updatePosition() external {}
 
-    function removePosition() external {}
+    function getPositionInfo(uint tokenId) external view returns (Deposit memory) {
+        return deposits[tokenId];
+    }
+
+    function removePosition(uint tokenId) external {}
 }
 
 interface WrappedToken {
