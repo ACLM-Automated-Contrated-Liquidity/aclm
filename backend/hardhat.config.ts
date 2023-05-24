@@ -7,14 +7,14 @@ export const developmentChains = ["hardhat", "localhost"]
 const config: HardhatUserConfig = {
     solidity: {
         compilers: [
-            // {
-            //     version: "0.8.9",
-            //     settings: {
-            //         optimizer: {
-            //             enabled: true,
-            //         },
-            //     },
-            // },
+            {
+                version: "0.8.18",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                    },
+                },
+            },
             {
                 version: "0.7.6",
                 settings: {
