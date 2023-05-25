@@ -19,7 +19,7 @@ developmentChains.includes(network.name)
 
           it("can invest", async () => {
               //   await approveTransfers(manager.address, deployer)
-              const tx = await manager.invest(NetAddrs[network.name].DAI, {
+              const tx = await manager.invest(NetAddrs[network.name].USDC, 500, {
                   value: ethers.utils.parseEther("1"),
               })
               const receipt = await tx.wait()

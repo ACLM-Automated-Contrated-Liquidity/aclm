@@ -12,6 +12,7 @@ import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "./position/Structs.sol";
 import "./position/Computer.sol";
 import "./position/Minter.sol";
+import "./position/Updater.sol";
 
 import "hardhat/console.sol";
 
@@ -20,7 +21,7 @@ import "hardhat/console.sol";
  * @author Yury Samarin
  * @notice Currently just a skeleton. Planned as dApp top level smart contract.
  */
-contract InvestmentManager is Minter {
+contract InvestmentManager is Minter, Updater {
     mapping(address => uint) internal balances;
 
     struct Investment {
@@ -39,8 +40,12 @@ contract InvestmentManager is Minter {
     address internal immutable nativeWrapperContract;
     ISwapRouter internal immutable swapRouter =
         ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    IUniswapV3Factory internal constant factory =
+        IUniswapV3Factory(0x1F98431c8aD98523631AE4a59f267346ea31F984);
 
-    constructor(address nativeCurrencyWrapper) Minter(0xC36442b4a4522E871399CD717aBDD847Ab11FE88) {
+    constructor(
+        address nativeCurrencyWrapper
+    ) Minter(0xC36442b4a4522E871399CD717aBDD847Ab11FE88) Updater(30) {
         nativeWrapperContract = nativeCurrencyWrapper;
     }
 
@@ -51,7 +56,7 @@ contract InvestmentManager is Minter {
         emit Received(msg.sender, msg.value);
     }
 
-    function invest(address otherToken) external payable {
+    function invest(address otherToken, uint24 fee) external payable {
         balances[msg.sender] += msg.value;
         console.log("received value: %s", msg.value);
         uint depAmount = msg.value - reservedFee;
@@ -59,10 +64,11 @@ contract InvestmentManager is Minter {
         _wrap(msg.sender, depAmount);
         uint256 wrappedBalance = IERC20(nativeWrapperContract).balanceOf(address(this));
         console.log("wrapped balance of contract: %s", wrappedBalance);
-        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken);
+        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken, fee);
         // console.log("Position: %s; %s", pos.amount0Desired, pos.amount1Desired);
         uint amountIn = depAmount / 2; // Might be more complicated than that.
-        uint amountOut = _swapForPosition(pos, amountIn);
+        uint amountOut = _swapForPosition(pos, amountIn, fee);
+        _decreaseDeposit(msg.sender, amountIn);
         if (pos.nativeFirst) {
             pos.amount0Desired = amountIn;
             pos.amount1Desired = amountOut;
@@ -73,7 +79,8 @@ contract InvestmentManager is Minter {
         pos.holder = msg.sender;
         uint256 otherBalance = IERC20(otherToken).balanceOf(address(this));
         console.log("swapped token balance of contract: %s", otherBalance);
-        (uint tokenId, , , ) = newPosition(pos);
+        (uint tokenId, , uint256 amount0, uint256 amount1) = newPosition(pos);
+        _decreaseDeposit(msg.sender, (pos.nativeFirst ? amount0 : amount1));
         uint[] storage toks = tokensByOwner[msg.sender];
         toks.push(tokenId);
     }
@@ -90,20 +97,25 @@ contract InvestmentManager is Minter {
         return tokensByOwner[msg.sender];
     }
 
-    function deposit(address depositToken, uint amount) external {
-        //only support in native wrapper token right now since we store 1 deposit per user.
-        require(
-            depositToken == nativeWrapperContract,
-            "Only wrapper token is currently supported"
-        );
-        require(amount > 0, "Zero deposits are not allowed!");
-        TransferHelper.safeTransferFrom(depositToken, msg.sender, address(this), amount);
-        _deposit(depositToken, amount, msg.sender);
-    }
+    // function deposit(address depositToken, uint amount) external {
+    //     //only support in native wrapper token right now since we store 1 deposit per user.
+    //     require(
+    //         depositToken == nativeWrapperContract,
+    //         "Only wrapper token is currently supported"
+    //     );
+    //     require(amount > 0, "Zero deposits are not allowed!");
+    //     TransferHelper.safeTransferFrom(depositToken, msg.sender, address(this), amount);
+    //     _deposit(depositToken, amount, msg.sender);
+    // }
 
     function _deposit(address depositToken, uint amount, address user) internal {
         // TransferHelper.safeTransferFrom(depositToken, user, address(this), amount);
         investments[user] = Investment(depositToken, user, amount);
+    }
+
+    function _decreaseDeposit(address owner, uint amount) internal {
+        Investment storage inv = investments[owner];
+        inv.amount = inv.amount - amount;
     }
 
     function getDeposit() external view returns (address token, uint amount) {
@@ -120,7 +132,8 @@ contract InvestmentManager is Minter {
 
     function _swapForPosition(
         Position memory calculated,
-        uint amountIn
+        uint amountIn,
+        uint24 fee
     ) internal returns (uint amountOut) {
         console.log("Swap amount in: %s", amountIn);
         TransferHelper.safeApprove(nativeWrapperContract, address(swapRouter), amountIn);
@@ -129,7 +142,7 @@ contract InvestmentManager is Minter {
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
             tokenIn: calculated.nativeFirst ? calculated.token0 : calculated.token1,
             tokenOut: calculated.nativeFirst ? calculated.token1 : calculated.token0,
-            fee: 3000,
+            fee: fee,
             recipient: address(this),
             deadline: block.timestamp,
             amountIn: amountIn,
@@ -149,7 +162,73 @@ contract InvestmentManager is Minter {
         return deposits[tokenId];
     }
 
-    function removePosition(uint tokenId) external {}
+    function getTickOutOfRangePositions() internal view override returns (uint[] memory) {
+        uint[] memory outOfRange = new uint[](tokenIds.length);
+        uint count;
+        for (uint i = 0; i < tokenIds.length; i++) {
+            Deposit memory dep = deposits[tokenIds[i]];
+            address pool = factory.getPool(dep.token0, dep.token1, dep.fee);
+            console.log("Position %s found pool: %s", tokenIds[i], pool);
+            (, int24 tick, , , , , ) = IUniswapV3Pool(pool).slot0();
+            if (dep.tickLower > tick || dep.tickUpper < tick) {
+                outOfRange[i] = tokenIds[i];
+                count++;
+            }
+        }
+        uint[] memory res = new uint[](count);
+        uint iter;
+        for (uint i = 0; i < tokenIds.length; i++) {
+            if (outOfRange[i] != 0) {
+                res[iter] = outOfRange[i];
+                iter++;
+            }
+        }
+        return res;
+    }
+
+    function updatePosition(uint tokenId) internal override {
+        (
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            ,
+            uint128 liquidity,
+            ,
+            ,
+            uint128 tokensOwed0,
+            uint128 tokensOwed1
+        ) = INonfungiblePositionManager(nonfungiblePositionManager).positions(tokenId);
+        console.log("tokens owed: %s; %s", tokensOwed0, tokensOwed1);
+
+        INonfungiblePositionManager.DecreaseLiquidityParams
+            memory params = INonfungiblePositionManager.DecreaseLiquidityParams({
+                tokenId: tokenId,
+                liquidity: liquidity,
+                amount0Min: 0,
+                amount1Min: 0,
+                deadline: block.timestamp
+            });
+
+        (uint amount0, uint amount1) = INonfungiblePositionManager(nonfungiblePositionManager)
+            .decreaseLiquidity(params);
+        console.log("Decreased liquidity amounts: %s; %s", amount0, amount1);
+
+        // Check that only token owner can do that
+        INonfungiblePositionManager.CollectParams memory collect = INonfungiblePositionManager
+            .CollectParams({
+                tokenId: tokenId,
+                recipient: address(this),
+                amount0Max: type(uint128).max,
+                amount1Max: type(uint128).max
+            });
+
+        (amount0, amount1) = INonfungiblePositionManager(nonfungiblePositionManager).collect(
+            collect
+        );
+    }
 }
 
 interface WrappedToken {

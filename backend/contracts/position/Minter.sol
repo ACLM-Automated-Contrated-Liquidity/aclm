@@ -20,6 +20,7 @@ abstract contract Minter is IERC721Receiver {
         uint128 liquidity;
         address token0;
         address token1;
+        uint24 fee;
         uint amount0;
         uint amount1;
     }
@@ -35,7 +36,7 @@ abstract contract Minter is IERC721Receiver {
         Position memory toMint
     ) internal returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1) {
         console.log(
-            "Minting a new position for DAI / WETH with amounts: %s ; %s",
+            "Minting a new position for USDC / WETH with amounts: %s ; %s",
             toMint.amount0Desired,
             toMint.amount1Desired
         );
@@ -58,9 +59,9 @@ abstract contract Minter is IERC721Receiver {
             .MintParams({
                 token0: toMint.token0,
                 token1: toMint.token1,
-                fee: 3000,
-                tickLower: -86940,
-                tickUpper: -62940,
+                fee: toMint.fee,
+                tickLower: toMint.tickLower,
+                tickUpper: toMint.tickUpper,
                 amount0Desired: toMint.amount0Desired,
                 amount1Desired: toMint.amount1Desired,
                 amount0Min: 0,
@@ -110,7 +111,7 @@ abstract contract Minter is IERC721Receiver {
             ,
             address token0,
             address token1,
-            ,
+            uint24 fee,
             int24 tickLower,
             int24 tickUpper,
             uint128 liquidity,
@@ -127,6 +128,7 @@ abstract contract Minter is IERC721Receiver {
             liquidity: liquidity,
             token0: token0,
             token1: token1,
+            fee: fee,
             amount0: amount0,
             amount1: amount1
         });

@@ -52,8 +52,8 @@ const config: HardhatUserConfig = {
             chainId: 80001,
             accounts: [`${process.env.PRIVATE_KEY}`],
             url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_MUMBAI_API_KEY}`,
-            gas: 2100000,
-            gasPrice: 8000000000,
+            // gas: 2100000,
+            // gasPrice: 8000000000,
         },
     },
     etherscan: {
