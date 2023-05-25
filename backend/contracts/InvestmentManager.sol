@@ -46,7 +46,7 @@ contract InvestmentManager is Minter, Updater, Ownable {
 
     constructor(
         address nativeCurrencyWrapper
-    ) Minter(0xC36442b4a4522E871399CD717aBDD847Ab11FE88) Updater(30) {
+    ) payable Minter(0xC36442b4a4522E871399CD717aBDD847Ab11FE88) Updater(30) {
         nativeWrapperContract = nativeCurrencyWrapper;
     }
 

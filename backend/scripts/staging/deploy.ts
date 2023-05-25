@@ -7,7 +7,9 @@ async function main() {
     console.log("Deploying contracts with the account: ", deployer.address)
 
     const factory = await ethers.getContractFactory("InvestmentManager")
-    const contract = await factory.deploy(NetAddrs[hre.network.name].WETH, { value: 0.1 })
+    const contract = await factory.deploy(NetAddrs[hre.network.name].WETH, {
+        value: ethers.utils.parseEther("0.1"),
+    })
     await contract.deployed()
     console.log(`deployed at: ${contract.address}`)
 }
