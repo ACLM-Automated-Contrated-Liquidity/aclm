@@ -17,6 +17,32 @@ developmentChains.includes(network.name)
               //   await wrapEther(deployer)
           })
 
+          it("can deposit some money", async () => {
+              const tx = await deployer.sendTransaction({
+                  to: manager.address,
+                  value: ethers.utils.parseEther("1"),
+              })
+              const receipt = await tx.wait()
+              console.log(`invested tx: ${JSON.stringify(receipt)}`)
+              const balance = await manager.getBalance()
+              console.log(`balance: ${ethers.utils.formatEther(balance)}`)
+          })
+
+          it("can withdraw money", async () => {
+              const tx = await deployer.sendTransaction({
+                  to: manager.address,
+                  value: ethers.utils.parseEther("1"),
+              })
+              await tx.wait()
+
+              const withdr = await manager.withdraw(ethers.utils.parseEther("0.5"))
+              const rec = await withdr.wait()
+              console.log(`withdrawn tx: ${JSON.stringify(rec)}`)
+
+              const balance = await manager.getBalance()
+              console.log(`balance: ${ethers.utils.formatEther(balance)}`)
+          })
+
           it("can invest", async () => {
               //   await approveTransfers(manager.address, deployer)
               const tx = await manager.invest(NetAddrs[network.name].USDC, 500, {

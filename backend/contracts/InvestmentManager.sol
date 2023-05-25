@@ -4,6 +4,7 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 // import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
@@ -21,7 +22,7 @@ import "hardhat/console.sol";
  * @author Yury Samarin
  * @notice Currently just a skeleton. Planned as dApp top level smart contract.
  */
-contract InvestmentManager is Minter, Updater {
+contract InvestmentManager is Minter, Updater, Ownable {
     mapping(address => uint) internal balances;
 
     struct Investment {
@@ -56,10 +57,14 @@ contract InvestmentManager is Minter, Updater {
         emit Received(msg.sender, msg.value);
     }
 
+    function getBalance() external view returns (uint) {
+        return balances[msg.sender];
+    }
+
     function invest(address otherToken, uint24 fee) external payable {
         balances[msg.sender] += msg.value;
         console.log("received value: %s", msg.value);
-        uint depAmount = msg.value - reservedFee;
+        uint depAmount = balances[msg.sender];
         console.log("pure deposit amount: %s", depAmount);
         _wrap(msg.sender, depAmount);
         uint256 wrappedBalance = IERC20(nativeWrapperContract).balanceOf(address(this));
@@ -97,7 +102,7 @@ contract InvestmentManager is Minter, Updater {
         return tokensByOwner[msg.sender];
     }
 
-    // function deposit(address depositToken, uint amount) external {
+    // function depositNative(address depositToken, uint amount) external {
     //     //only support in native wrapper token right now since we store 1 deposit per user.
     //     require(
     //         depositToken == nativeWrapperContract,
@@ -124,10 +129,10 @@ contract InvestmentManager is Minter, Updater {
     }
 
     function withdraw(uint amount) external {
-        Investment storage dep = investments[msg.sender];
-        require(dep.amount >= amount, "Withdraw amount should be less than deposit!");
-        TransferHelper.safeTransfer(dep.tokenContract, msg.sender, amount);
-        dep.amount -= amount;
+        uint balance = balances[msg.sender];
+        require(balance >= amount, "Withdraw amount should not be more than balance!");
+        balances[msg.sender] = balance - amount;
+        payable(msg.sender).transfer(amount);
     }
 
     function _swapForPosition(
