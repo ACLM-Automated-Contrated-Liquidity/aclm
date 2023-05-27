@@ -29,8 +29,9 @@ library Computer {
         console.logInt(tick);
         bool nativeFirst = native < other;
         (address token0, address token1) = nativeFirst ? (native, other) : (other, native);
-        int24 tickLower = tick - 2 * int24(fee);
-        int24 tickUpper = tick + 2 * int24(fee);
+        int24 spacing = IUniswapV3Pool(pool).tickSpacing();
+        int24 tickLower = tick - 10 * spacing;
+        int24 tickUpper = tick + 10 * spacing;
         console.log("Ticks: ");
         console.logInt(tickLower);
         console.logInt(tickUpper);

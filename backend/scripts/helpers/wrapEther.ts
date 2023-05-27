@@ -16,7 +16,7 @@ async function main() {
     console.log(`Weth balance: ${WETHBalance}`)
 
     const receipt = await WETH.deposit({
-        value: ethers.utils.parseEther("0.1"),
+        value: ethers.utils.parseEther("0.5"),
     })
     await receipt.wait(1)
     console.log(`Receipt: ${JSON.stringify(receipt)}`)

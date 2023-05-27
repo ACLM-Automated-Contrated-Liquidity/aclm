@@ -17,15 +17,83 @@ developmentChains.includes(network.name)
               //   await wrapEther(deployer)
           })
 
-          it("can deposit some money", async () => {
+          it("can receive some money", async () => {
               const tx = await deployer.sendTransaction({
                   to: manager.address,
                   value: ethers.utils.parseEther("1"),
               })
               const receipt = await tx.wait()
-              console.log(`invested tx: ${JSON.stringify(receipt)}`)
+              console.log(`sent tx: ${JSON.stringify(receipt)}`)
               const balance = await manager.getBalance()
               console.log(`balance: ${ethers.utils.formatEther(balance)}`)
+          })
+
+          it("can deposit some money", async () => {
+              const tx = await manager.deposit({
+                  value: ethers.utils.parseEther("1"),
+              })
+              const receipt = await tx.wait()
+              console.log(`deposit tx: ${JSON.stringify(receipt)}`)
+              const balance = await manager.getBalance()
+              expect(ethers.utils.formatEther(balance)).equal("1.0")
+          })
+
+          it("can wrap and swap", async () => {
+              const tx = await manager.deposit({
+                  value: ethers.utils.parseEther("1"),
+              })
+              await tx.wait()
+
+              const wrapTx = await manager.wrapAndSwap(NetAddrs[network.name].USDC, 500)
+              const receipt = await wrapTx.wait()
+              console.log(`swap tx: ${receipt.transactionHash}`)
+
+              const balance = await manager.getBalance()
+              expect(parseInt(ethers.utils.formatEther(balance))).is.equal(0)
+
+              const amount0 = await manager.getDeposit(NetAddrs[network.name].WETH)
+              expect(ethers.utils.formatEther(amount0)).is.equal("0.5")
+
+              const amount1 = await manager.getDeposit(NetAddrs[network.name].USDC)
+              console.log(`Deposit usdc: ${ethers.utils.formatUnits(amount1, 6)}`)
+              expect(Number(ethers.utils.formatUnits(amount1, 6))).is.above(0)
+          })
+
+          it("can mint new position", async () => {
+              const tx = await manager.deposit({
+                  value: ethers.utils.parseEther("1"),
+              })
+              await tx.wait()
+
+              const wrapTx = await manager.wrapAndSwap(NetAddrs[network.name].USDC, 500)
+              const receipt = await wrapTx.wait()
+
+              const mintTx = await manager.createAndMintBestPosition(
+                  NetAddrs[network.name].USDC,
+                  500,
+                  ethers.utils.parseEther("0.5"),
+                  ethers.utils.parseUnits("900", 6)
+              )
+              const mintRec = await mintTx.wait()
+              console.log(`mint tx: ${mintRec.transactionHash}`)
+
+              const balance = await manager.getBalance()
+              expect(parseInt(ethers.utils.formatEther(balance))).is.equal(0)
+
+              const amount0 = await manager.getDeposit(NetAddrs[network.name].WETH)
+              const amountWrapped = ethers.utils.formatEther(amount0)
+              console.log(`Balance wrapped: ${amountWrapped}`)
+              expect(Number(amountWrapped)).is.below(0.5)
+
+              const amount1 = await manager.getDeposit(NetAddrs[network.name].USDC)
+              console.log(`Deposit usdc: ${ethers.utils.formatUnits(amount1, 6)}`)
+              expect(Number(ethers.utils.formatUnits(amount1, 6))).is.below(900)
+
+              const positions = await manager.getPositions()
+              console.log(`Positions: ${positions}`)
+              expect(positions.length).to.equal(1)
+              const info = await manager.getPositionInfo(positions[0])
+              console.log(`Position info: ${JSON.stringify(info)}`)
           })
 
           it("can withdraw money", async () => {
@@ -88,8 +156,22 @@ developmentChains.includes(network.name)
 
 async function deployContracts(): Promise<[Contract, Signer]> {
     const [deployer] = await ethers.getSigners()
+    // const f = await ethers.getContractFactory("NonfungiblePositionManager")
+    // const m = await f.deploy(
+    //     NetAddrs[network.name].poolFactory,
+    //     NetAddrs[network.name].WETH,
+    //     "0x91ae842A5Ffd8d12023116943e72A606179294f3"
+    // )
+    // await m.deployed()
+
     const factory = await ethers.getContractFactory("InvestmentManager")
-    const contract = await factory.deploy(NetAddrs[network.name].WETH)
+    const contract = await factory.deploy(
+        NetAddrs[network.name].WETH,
+        "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+        {
+            value: ethers.utils.parseEther("0.2"),
+        }
+    )
     await contract.deployed()
     console.log(`deployed at: ${contract.address}`)
     return [contract, deployer]

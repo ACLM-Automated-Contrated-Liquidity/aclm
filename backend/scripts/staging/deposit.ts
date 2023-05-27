@@ -11,18 +11,13 @@ async function main() {
         "0x26c2A53fEf9ff15f246568d31aE7dAae5C56Dc4c",
         deployer
     )
-    const tx = await manager.invest(NetAddrs[hre.network.name].USDC, 3000, {
-        value: ethers.utils.parseEther("0.4"),
-        gasLimit: 20000000,
+    const tx = await manager.deposit({
+        value: ethers.utils.parseEther("0.2"),
     })
     const receipt = await tx.wait()
-    console.log(`invested: ${JSON.stringify(receipt)}`)
-    const [token, amount] = await manager.getDeposit()
-    console.log(`amount: ${amount}`)
-    const positions = await manager.getPositions()
-    console.log(`Positions: ${positions}`)
-    const info = await manager.getPositionInfo(positions[0])
-    console.log(`Position info: ${JSON.stringify(info)}`)
+    console.log(`deposit tx: ${receipt.transactionHash}`)
+    const balance = await manager.getBalance()
+    console.log(`Balance on contract: ${balance}`)
 }
 
 main()

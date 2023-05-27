@@ -38,7 +38,7 @@ export const NetAddrs: { [k: string]: NetworkAddresses } = {
     mumbai: {
         WETH: "0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889",
         DAI: "0xb973d2876c4f161439ad05f1dae184dbd594e04e",
-        USDC: "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
+        USDC: "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23",
         poolFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
         swapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
     },

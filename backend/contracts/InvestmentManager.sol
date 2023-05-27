@@ -4,7 +4,7 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 // import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
@@ -22,21 +22,17 @@ import "hardhat/console.sol";
  * @author Yury Samarin
  * @notice Currently just a skeleton. Planned as dApp top level smart contract.
  */
-contract InvestmentManager is Minter, Updater, Ownable {
+contract InvestmentManager is Minter, Updater {
     mapping(address => uint) internal balances;
 
     struct Investment {
         address tokenContract;
-        address owner;
         uint amount;
     }
 
-    mapping(address => Investment) internal investments;
+    mapping(address => Investment[]) internal investments;
 
     mapping(address => uint256[]) internal tokensByOwner;
-
-    //compute fee instead of hardcoding.
-    uint reservedFee = 0.1e18;
 
     address internal immutable nativeWrapperContract;
     ISwapRouter internal immutable swapRouter =
@@ -45,8 +41,9 @@ contract InvestmentManager is Minter, Updater, Ownable {
         IUniswapV3Factory(0x1F98431c8aD98523631AE4a59f267346ea31F984);
 
     constructor(
-        address nativeCurrencyWrapper
-    ) payable Minter(0xC36442b4a4522E871399CD717aBDD847Ab11FE88) Updater(30) {
+        address nativeCurrencyWrapper,
+        address _positionManager
+    ) payable Minter(_positionManager) Updater(30) {
         nativeWrapperContract = nativeCurrencyWrapper;
     }
 
@@ -61,39 +58,75 @@ contract InvestmentManager is Minter, Updater, Ownable {
         return balances[msg.sender];
     }
 
-    function invest(address otherToken, uint24 fee) external payable {
+    function deposit() public payable {
         balances[msg.sender] += msg.value;
         console.log("received value: %s", msg.value);
         uint depAmount = balances[msg.sender];
-        console.log("pure deposit amount: %s", depAmount);
-        _wrap(msg.sender, depAmount);
+        console.log("full deposit amount: %s", depAmount);
+    }
+
+    function wrapAndSwap(
+        address otherToken,
+        uint24 fee
+    ) public returns (uint amountIn, uint amountOut) {
+        uint dep = balances[msg.sender];
+        _wrap(msg.sender, dep);
         uint256 wrappedBalance = IERC20(nativeWrapperContract).balanceOf(address(this));
         console.log("wrapped balance of contract: %s", wrappedBalance);
-        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken, fee);
-        // console.log("Position: %s; %s", pos.amount0Desired, pos.amount1Desired);
-        uint amountIn = depAmount / 2; // Might be more complicated than that.
-        uint amountOut = _swapForPosition(pos, amountIn, fee);
-        _decreaseDeposit(msg.sender, amountIn);
-        if (pos.nativeFirst) {
-            pos.amount0Desired = amountIn;
-            pos.amount1Desired = amountOut;
-        } else {
-            pos.amount0Desired = amountOut;
-            pos.amount1Desired = amountIn;
-        }
-        pos.holder = msg.sender;
+        amountIn = dep / 2;
+        amountOut = _swapForPosition(nativeWrapperContract, otherToken, amountIn, fee);
         uint256 otherBalance = IERC20(otherToken).balanceOf(address(this));
         console.log("swapped token balance of contract: %s", otherBalance);
-        (uint tokenId, , uint256 amount0, uint256 amount1) = newPosition(pos);
-        _decreaseDeposit(msg.sender, (pos.nativeFirst ? amount0 : amount1));
+        _decreaseDeposit(nativeWrapperContract, msg.sender, amountIn);
+        _deposit(otherToken, amountOut, msg.sender);
+    }
+
+    function createAndMintBestPosition(
+        address otherToken,
+        uint24 fee,
+        uint amountNative,
+        uint amountOther
+    ) public returns (uint) {
+        Position memory pos = Computer.bestPosition(nativeWrapperContract, otherToken, fee);
+        if (pos.nativeFirst) {
+            pos.amount0Desired = amountNative;
+            pos.amount1Desired = amountOther;
+        } else {
+            pos.amount0Desired = amountOther;
+            pos.amount1Desired = amountNative;
+        }
+        pos.holder = msg.sender;
+        (uint tokenId, , uint amount0, uint amount1) = newPosition(pos);
+        _decreaseDeposit(nativeWrapperContract, msg.sender, (pos.nativeFirst ? amount0 : amount1));
+        console.log(
+            "wrapped balance of contract: %s",
+            IERC20(nativeWrapperContract).balanceOf(address(this))
+        );
+        _decreaseDeposit(otherToken, msg.sender, (pos.nativeFirst ? amount1 : amount0));
+        console.log(
+            "other token balance of contract: %s",
+            IERC20(otherToken).balanceOf(address(this))
+        );
         uint[] storage toks = tokensByOwner[msg.sender];
         toks.push(tokenId);
+        console.log("Saved LP token ID: %s", tokenId);
+        return tokenId;
+    }
+
+    /**
+     * Single button, one transaction function to deposit, swap and mint best position in a pool.
+     */
+    function invest(address otherToken, uint24 fee) external payable {
+        deposit();
+        (uint amountIn, uint amountOut) = wrapAndSwap(otherToken, fee);
+        createAndMintBestPosition(otherToken, fee, amountIn, amountOut);
     }
 
     function _wrap(address user, uint amount) internal {
         uint balance = balances[user];
-        require(balance > amount);
+        require(balance >= amount, "Not enough balance!");
         WrappedToken(nativeWrapperContract).deposit{value: amount}();
+        balances[user] -= amount;
         // we should track individual user balances of the token.
         _deposit(nativeWrapperContract, amount, user);
     }
@@ -102,30 +135,39 @@ contract InvestmentManager is Minter, Updater, Ownable {
         return tokensByOwner[msg.sender];
     }
 
-    // function depositNative(address depositToken, uint amount) external {
-    //     //only support in native wrapper token right now since we store 1 deposit per user.
-    //     require(
-    //         depositToken == nativeWrapperContract,
-    //         "Only wrapper token is currently supported"
-    //     );
-    //     require(amount > 0, "Zero deposits are not allowed!");
-    //     TransferHelper.safeTransferFrom(depositToken, msg.sender, address(this), amount);
-    //     _deposit(depositToken, amount, msg.sender);
-    // }
-
     function _deposit(address depositToken, uint amount, address user) internal {
-        // TransferHelper.safeTransferFrom(depositToken, user, address(this), amount);
-        investments[user] = Investment(depositToken, user, amount);
+        Investment[] storage invArr = investments[user];
+        bool found;
+        for (uint i = 0; i < invArr.length; i++) {
+            if (invArr[i].tokenContract == depositToken) {
+                invArr[i].amount += amount;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            invArr.push(Investment(depositToken, amount));
+        }
     }
 
-    function _decreaseDeposit(address owner, uint amount) internal {
-        Investment storage inv = investments[owner];
-        inv.amount = inv.amount - amount;
+    function _decreaseDeposit(address depositToken, address owner, uint amount) internal {
+        Investment[] storage inv = investments[owner];
+        for (uint i = 0; i < inv.length; i++) {
+            if (inv[i].tokenContract == depositToken) {
+                inv[i].amount -= amount;
+                break;
+            }
+        }
     }
 
-    function getDeposit() external view returns (address token, uint amount) {
-        Investment memory dep = investments[msg.sender];
-        return (dep.tokenContract, dep.amount);
+    function getDeposit(address tokenContract) external view returns (uint amount) {
+        Investment[] memory dep = investments[msg.sender];
+        for (uint i = 0; i < dep.length; i++) {
+            if (dep[i].tokenContract == tokenContract) {
+                return dep[i].amount;
+            }
+        }
+        return 0;
     }
 
     function withdraw(uint amount) external {
@@ -136,7 +178,8 @@ contract InvestmentManager is Minter, Updater, Ownable {
     }
 
     function _swapForPosition(
-        Position memory calculated,
+        address tokenIn,
+        address tokenOut,
         uint amountIn,
         uint24 fee
     ) internal returns (uint amountOut) {
@@ -145,8 +188,8 @@ contract InvestmentManager is Minter, Updater, Ownable {
         uint256 minOut = /* Calculate min output */ 0;
         uint160 priceLimit = /* Calculate price limit */ 0;
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
-            tokenIn: calculated.nativeFirst ? calculated.token0 : calculated.token1,
-            tokenOut: calculated.nativeFirst ? calculated.token1 : calculated.token0,
+            tokenIn: tokenIn,
+            tokenOut: tokenOut,
             fee: fee,
             recipient: address(this),
             deadline: block.timestamp,
