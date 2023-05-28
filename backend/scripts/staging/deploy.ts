@@ -11,7 +11,7 @@ async function main() {
         NetAddrs[hre.network.name].WETH,
         "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
         {
-            value: ethers.utils.parseEther("0.1"),
+            value: ethers.utils.parseEther("0.01"),
         }
     )
     await contract.deployed()

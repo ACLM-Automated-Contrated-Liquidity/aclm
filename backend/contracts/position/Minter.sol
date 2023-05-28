@@ -2,15 +2,13 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 import "../external/interfaces.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "./Structs.sol";
+import "./TickMath.sol";
 import "hardhat/console.sol";
 
-abstract contract Minter is IERC721Receiver {
+abstract contract Minter {
     address internal immutable nonfungiblePositionManager;
 
     struct Deposit {
@@ -42,16 +40,8 @@ abstract contract Minter is IERC721Receiver {
         );
 
         // Approve the position manager
-        TransferHelper.safeApprove(
-            toMint.token0,
-            nonfungiblePositionManager,
-            toMint.amount0Desired
-        );
-        TransferHelper.safeApprove(
-            toMint.token1,
-            nonfungiblePositionManager,
-            toMint.amount1Desired
-        );
+        safeApprove(toMint.token0, nonfungiblePositionManager, toMint.amount0Desired);
+        safeApprove(toMint.token1, nonfungiblePositionManager, toMint.amount1Desired);
 
         // The values for tickLower and tickUpper may not work for all tick spacings.
         // Setting amount0Min and amount1Min to 0 is unsafe.
@@ -60,8 +50,14 @@ abstract contract Minter is IERC721Receiver {
                 token0: toMint.token0,
                 token1: toMint.token1,
                 fee: toMint.fee,
-                tickLower: toMint.tickLower,
-                tickUpper: toMint.tickUpper,
+                tickLower: TickMath.nearestUsableTick(
+                    toMint.tickLower,
+                    uint24(toMint.tickSpacing)
+                ),
+                tickUpper: TickMath.nearestUsableTick(
+                    toMint.tickUpper,
+                    uint24(toMint.tickSpacing)
+                ),
                 amount0Desired: toMint.amount0Desired,
                 amount1Desired: toMint.amount1Desired,
                 amount0Min: 0,
@@ -69,8 +65,17 @@ abstract contract Minter is IERC721Receiver {
                 recipient: address(this),
                 deadline: block.timestamp
             });
+        console.log("Mint call params: %s; %s; %s", params.token0, params.token1, params.fee);
+        console.logInt(params.tickLower);
+        console.logInt(params.tickUpper);
+        console.log(
+            ">>> %s; %s; %s",
+            params.amount0Desired,
+            params.amount1Desired,
+            params.recipient
+        );
 
-        // Note that the pool defined by DAI/USDC and fee tier 0.3% must already be created and initialized in order to mint
+        // Note that the pool must already be created and initialized in order to mint
         (tokenId, liquidity, amount0, amount1) = INonfungiblePositionManager(
             nonfungiblePositionManager
         ).mint(params);
@@ -89,20 +94,6 @@ abstract contract Minter is IERC721Receiver {
         //     TransferHelper.safeApprove(toMint.token0, nonfungiblePositionManager, refund1);
         //     TransferHelper.safeTransfer(toMint.token1, msg.sender, refund1);
         // }
-    }
-
-    // Implementing `onERC721Received` so this contract can receive custody of erc721 tokens
-    // Note that the operator is recorded as the owner of the deposited NFT
-    function onERC721Received(
-        address operator,
-        address,
-        uint256 tokenId,
-        bytes calldata
-    ) external override returns (bytes4) {
-        require(msg.sender == nonfungiblePositionManager, "not a univ3 nft");
-        console.log("Received LP token: %s; %s", operator, tokenId);
-        _createDeposit(operator, tokenId, 0, 0);
-        return this.onERC721Received.selector;
     }
 
     function _createDeposit(address owner, uint tokenId, uint amount0, uint amount1) internal {
@@ -132,5 +123,12 @@ abstract contract Minter is IERC721Receiver {
             amount0: amount0,
             amount1: amount1
         });
+    }
+
+    function safeApprove(address token, address to, uint256 value) internal {
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(IERC20.approve.selector, to, value)
+        );
+        require(success && (data.length == 0 || abi.decode(data, (bool))), "MSA");
     }
 }

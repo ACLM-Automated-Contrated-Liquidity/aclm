@@ -30,11 +30,23 @@ library Computer {
         bool nativeFirst = native < other;
         (address token0, address token1) = nativeFirst ? (native, other) : (other, native);
         int24 spacing = IUniswapV3Pool(pool).tickSpacing();
-        int24 tickLower = tick - 10 * spacing;
-        int24 tickUpper = tick + 10 * spacing;
+        int24 tickLower = tick - 50 * spacing;
+        int24 tickUpper = tick + 50 * spacing;
         console.log("Ticks: ");
         console.logInt(tickLower);
         console.logInt(tickUpper);
-        return Position(token0, token1, fee, tickLower, tickUpper, 0, 0, msg.sender, nativeFirst);
+        return
+            Position(
+                token0,
+                token1,
+                fee,
+                tickLower,
+                tickUpper,
+                spacing,
+                0,
+                0,
+                msg.sender,
+                nativeFirst
+            );
     }
 }

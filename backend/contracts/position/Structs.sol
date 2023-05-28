@@ -7,6 +7,7 @@ struct Position {
     uint24 fee;
     int24 tickLower;
     int24 tickUpper;
+    int24 tickSpacing;
     uint256 amount0Desired;
     uint256 amount1Desired;
     address holder;

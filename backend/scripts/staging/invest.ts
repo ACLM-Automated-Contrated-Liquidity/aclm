@@ -8,7 +8,7 @@ async function main() {
 
     const manager = await ethers.getContractAt(
         "InvestmentManager",
-        "0x26c2A53fEf9ff15f246568d31aE7dAae5C56Dc4c",
+        "0x10d967dDFEdF2Dc548229071705D1a39720f1B2d",
         deployer
     )
     const tx = await manager.invest(NetAddrs[hre.network.name].USDC, 3000, {
@@ -17,7 +17,7 @@ async function main() {
     })
     const receipt = await tx.wait()
     console.log(`invested: ${JSON.stringify(receipt)}`)
-    const [token, amount] = await manager.getDeposit()
+    const amount = await manager.getDeposit(NetAddrs[hre.network.name].USDC)
     console.log(`amount: ${amount}`)
     const positions = await manager.getPositions()
     console.log(`Positions: ${positions}`)

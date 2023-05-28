@@ -2,10 +2,8 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import "@openzeppelin/contracts/access/Ownable.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+// import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 // import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
@@ -20,7 +18,7 @@ import "hardhat/console.sol";
 /**
  * @title High Level Investment Manager contract
  * @author Yury Samarin
- * @notice Currently just a skeleton. Planned as dApp top level smart contract.
+ * @notice  Allows single button investment ( see #invest method).
  */
 contract InvestmentManager is Minter, Updater {
     mapping(address => uint) internal balances;
@@ -184,7 +182,7 @@ contract InvestmentManager is Minter, Updater {
         uint24 fee
     ) internal returns (uint amountOut) {
         console.log("Swap amount in: %s", amountIn);
-        TransferHelper.safeApprove(nativeWrapperContract, address(swapRouter), amountIn);
+        safeApprove(nativeWrapperContract, address(swapRouter), amountIn);
         uint256 minOut = /* Calculate min output */ 0;
         uint160 priceLimit = /* Calculate price limit */ 0;
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
