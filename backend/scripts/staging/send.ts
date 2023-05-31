@@ -8,12 +8,13 @@ async function main() {
 
     const manager = await ethers.getContractAt(
         "InvestmentManager",
-        "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
+        "0x26c2A53fEf9ff15f246568d31aE7dAae5C56Dc4c",
         deployer
     )
-    const tx = await manager.deposit({
-        value: ethers.utils.parseEther("0.3"),
-        gasLimit: 2000000,
+    const tx = await deployer.sendTransaction({
+        to: manager.address,
+        value: ethers.utils.parseEther("0.2"),
+        gasLimit: 1000000,
     })
     const receipt = await tx.wait()
     console.log(`deposit tx: ${receipt.transactionHash}`)

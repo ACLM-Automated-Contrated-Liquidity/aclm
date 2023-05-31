@@ -8,7 +8,7 @@ async function main() {
 
     const manager = await ethers.getContractAt(
         "InvestmentManager",
-        "0x26c2A53fEf9ff15f246568d31aE7dAae5C56Dc4c",
+        "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
         deployer
     )
     const wrapTx = await manager.wrapAndSwap(NetAddrs[hre.network.name].USDC, 3000)
