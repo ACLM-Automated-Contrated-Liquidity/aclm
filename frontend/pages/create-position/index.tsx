@@ -1,17 +1,116 @@
 import {BsArrowLeft} from 'react-icons/bs';
-import {Box, Button, Flex, Text} from '@chakra-ui/react';
+import {
+    Box,
+    Button, Card, CardBody, CardFooter, CardHeader, Divider,
+    Flex,
+    FormControl,
+    FormLabel, Heading, HStack,
+    Input,
+    RangeSlider,
+    RangeSliderFilledTrack,
+    RangeSliderMark,
+    RangeSliderThumb,
+    RangeSliderTrack,
+    Stack, Stat, StatArrow, StatGroup, StatHelpText, StatLabel, StatNumber, Switch,
+    Text,
+    useToast
+} from '@chakra-ui/react';
 import styles from './create-position.module.scss';
-import PanelComponent from '../../components/PanelComponent';
 import React, {useState} from 'react';
-import {LineSeries, HorizontalGridLines, VerticalGridLines, XYPlot} from 'react-vis';
+import {PriceChart} from '../../components/PriceChart';
+import {LiquidityDistribution} from '../../components/LiquidityDistribution';
+import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
+
+const rawData = [
+    {label: 'Mon', aValue: 40, bValue: 62},
+    {label: 'Tue', aValue: 14, bValue: 68},
+    {label: 'Wed', aValue: 22, bValue: 76},
+    {label: 'Thu', aValue: 43, bValue: 54},
+    {label: 'Fri', aValue: 33, bValue: 58},
+];
+const USDC = "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23";
 
 export default function CreatePositionPage() {
     const [step, setStep] = useState(1);
+    const [lowerBound, setLowerBound] = useState(1850);
+    const [upperBound, setUpperBound] = useState(1950);
+    const toast = useToast();
 
     let data = [];
     for (let i = 0; i < 100; i++) {
         let phi = i/10;
         data.push({x: phi, y: Math.sin(phi) + 0.5 * Math.random()});
+    }
+
+    let onRangeChanged = ([lBound, uBound]: [number, number]) => {
+        setLowerBound(lBound);
+        setUpperBound(uBound);
+    };
+
+    let deposit = () => {
+        const initBalance = async () => {
+            let provider = new BrowserProvider(window.ethereum);
+            let signer = await provider.getSigner();
+
+            const contractABI = [{
+                stateMutability: 'payable',
+                type: 'function',
+                name: 'deposit',
+                inputs: [],
+                outputs: [],
+            }];
+            let contract = new Contract("0x10d967dDFEdF2Dc548229071705D1a39720f1B2d", contractABI, signer)
+            let amount = parseEther("0.01");
+
+            // Create the transaction
+            const receipt = await contract.deposit({ value: amount });
+
+            const subscribtion = receipt.wait();
+
+            subscribtion.then(() => {
+                toast({
+                    title: 'Success',
+                    description: "You succesfuly deposited money.",
+                    status: 'success',
+                    duration: 9000,
+                    isClosable: true,
+                })
+            });
+        }
+
+        initBalance()
+            .catch(console.error);
+    }
+
+    let invest = () => {
+        const initBalance = async () => {
+            let provider = new BrowserProvider(window.ethereum);
+            let signer = await provider.getSigner();
+
+            const contractABI = [{
+                stateMutability: 'payable',
+                type: 'function',
+                name: 'invest',
+                outputs: [],
+                inputs: [
+                    {"internalType":"address","name":"otherToken","type":"address"},
+                    {"internalType":"uint24","name":"fee","type":"uint24"},
+                ],
+            }];
+            let contract = new Contract("0x10d967dDFEdF2Dc548229071705D1a39720f1B2d", contractABI, signer)
+            let amount = parseEther("0.1");
+
+            // Create the transaction
+            const receipt = await contract.invest(
+                USDC, 3000,
+                {
+                    value: parseEther("0.01"),
+                    gasLimit: 20000000,
+                });
+        }
+
+        initBalance()
+            .catch(console.error);
     }
 
     return (
@@ -23,85 +122,122 @@ export default function CreatePositionPage() {
                 </Flex>
             </a>
 
-            <PanelComponent className={styles.panel}>
-                {
-                    step === 1 &&
-                    <div>
-                        <Flex>
-                            <Box flex={1} marginTop='32px'>
-                                <h1>Create new position. We will guide you through the process. It is easy</h1>
-                                <Box marginTop='32px'>
-                                    Hey there! We're thrilled to let you know that we're here to assist you in opening a brand new stock position.
-                                    Whether you're a seasoned investor or just starting out,
-                                    our team is dedicated to providing you with the support and guidance you need
-                                </Box>
-                            </Box>
-                            <Box className={styles.image1}>
+            <Card>
+                <CardHeader>
+                    <Flex justifyContent='space-between'>
+                        <Heading>Create position</Heading>
+                        <FormControl display='flex' width='auto'>
+                            <FormLabel htmlFor='email-alerts' mb='0'>
+                                Enable advanced mode
+                            </FormLabel>
+                            <Switch/>
+                        </FormControl>
+                    </Flex>
+                </CardHeader>
 
-                            </Box>
-                        </Flex>
+                <CardBody>
+                    <Box marginLeft='32px'>
+                        <PriceChart lowerBound={lowerBound} upperBound={upperBound}></PriceChart>
+                    </Box>
 
-                        <Flex className={styles.footer}>
-                            <Button onClick={() => setStep(2)}>Next step</Button>
-                        </Flex>
-                    </div>
-                } {
-                    step === 2 &&
-                    <div>
-                        <Flex>
-                            <Box flex={1}>
-                                <h1>Step 2. Backtest</h1>
-                                <Box marginTop='32px'>
-                                    Hey there! We're thrilled to let you know that we're here to assist you in opening a brand new stock position.
-                                    Whether you're a seasoned investor or just starting out,
-                                    our team is dedicated to providing you with the support and guidance you need
-                                </Box>
-                                <Box marginTop='32px' marginBottom='32px' position='relative'>
-                                    <XYPlot width={1400} height={250} className={styles.chart}>
-                                        <rect id="testMask" x={0} y={0} width={100} height={100}></rect>
-                                        <VerticalGridLines />
-                                        <HorizontalGridLines />
-                                        <LineSeries
-                                            mask='url(#test)'
-                                            curve="curveNatural"
-                                            data={data}
-                                        />
-                                    </XYPlot>
-                                    {/*<div className={styles.fill1}></div>*/}
-                                    {/*<div className={styles.fill2}></div>*/}
-                                    {/*<div className={styles.gradient1}></div>*/}
-                                    {/*<div className={styles.gradient2}></div>*/}
-                                </Box>
-                            </Box>
-                        </Flex>
+                    <Box className={styles.sliderWrap}>
+                        <FormControl>
+                            <FormLabel>Select range</FormLabel>
+                            <HStack spacing={3}>
+                                <Input defaultValue={lowerBound} readOnly width='80px'></Input>
+                                <RangeSlider
+                                    min={1700}
+                                    max={2200}
+                                    defaultValue={[1850, 1900]}
+                                    onChange={range => onRangeChanged(range)}
+                                >
+                                    <RangeSliderMark
+                                        value={lowerBound}
+                                        textAlign='center'
+                                        bg='blue.500'
+                                        color='white'
+                                        mt='-10'
+                                        ml='-5'
+                                        w='12'
+                                    ></RangeSliderMark>
+                                    <RangeSliderTrack>
+                                        <RangeSliderFilledTrack />
+                                    </RangeSliderTrack>
+                                    <RangeSliderThumb index={0} />
+                                    <RangeSliderThumb index={1} />
+                                </RangeSlider>
+                                <Input defaultValue={upperBound} readOnly width='80px'></Input>
+                            </HStack>
+                        </FormControl>
+                    </Box>
+                </CardBody>
 
-                        <Flex className={styles.footer}>
-                            <Button onClick={() => setStep(1)} marginRight='16px'>Back</Button>
-                            <Button onClick={() => setStep(3)}>Next step</Button>
-                        </Flex>
-                    </div>
-                } {
-                    step === 3 &&
-                    <div>
-                        <Flex>
-                            <Box flex={1} marginTop='32px'>
-                                <h1>Step 3. Select parameters</h1>
-                                <Box marginTop='32px'>
-                                    Here we show a back test
-                                </Box>
-                            </Box>
-                            <Box className={styles.image1}>
+                <CardFooter justifyContent='end'>
+                    <HStack className={styles.footer} marginTop='32px' spacing={3}>
+                        <Button onClick={() => setStep(2)}>Back</Button>
+                        <Button onClick={() => invest()} colorScheme='purple'>Run backtest</Button>
+                    </HStack>
+                </CardFooter>
+            </Card>
 
-                            </Box>
-                        </Flex>
+            <Card className={styles.rightPanel}>
+                <CardHeader>
+                    <Heading>Parameters</Heading>
+                </CardHeader>
+                <CardBody>
+                    <Stack spacing={3}>
+                        <LiquidityDistribution lowerBound={lowerBound} upperBound={upperBound}></LiquidityDistribution>
 
-                        <Flex className={styles.footer}>
-                            <Button onClick={() => setStep(2)} marginRight='16px'>Back</Button>
-                            <Button onClick={() => setStep(3)}>Next step</Button>
-                        </Flex>
-                    </div>
-                }
-            </PanelComponent>
+                        <HStack spacing={3}>
+                            <FormControl>
+                                <FormLabel>Min</FormLabel>
+                                <Input value={lowerBound} readOnly></Input>
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel>Max</FormLabel>
+                                <Input value={upperBound} readOnly></Input>
+                            </FormControl>
+                        </HStack>
+
+                        <HStack spacing={3}>
+                            <FormControl>
+                                <FormLabel>Eth</FormLabel>
+                                <Input value="0.001" readOnly></Input>
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel>USDC</FormLabel>
+                                <Input value="1000" readOnly></Input>
+                            </FormControl>
+                        </HStack>
+
+                        <Divider paddingTop='8px' paddingBottom='8px'></Divider>
+
+                        <StatGroup paddingTop='8px'>
+                            <Stat display='flex' justifyContent='end'>
+                                <StatLabel>Daily yeilds</StatLabel>
+                                <StatNumber>1,670</StatNumber>
+                                <StatHelpText>
+                                    <StatArrow type='increase' />
+                                    1.26%
+                                </StatHelpText>
+                            </Stat>
+
+                            <Stat display='flex' justifyContent='end'>
+                                <StatLabel>APY</StatLabel>
+                                <StatNumber>45</StatNumber>
+                                <StatHelpText>
+                                    <StatArrow type='increase' />
+                                    9.05%
+                                </StatHelpText>
+                            </Stat>
+                        </StatGroup>
+                    </Stack>
+                </CardBody>
+
+                <CardFooter justifyContent='end'>
+                    <Button colorScheme='purple'>Invest</Button>
+                </CardFooter>
+            </Card>
         </div>
     );
 }

@@ -11,10 +11,7 @@ async function main() {
         "0x26c2A53fEf9ff15f246568d31aE7dAae5C56Dc4c",
         deployer
     )
-    const tx = await manager.invest(NetAddrs[hre.network.name].USDC, 3000, {
-        value: ethers.utils.parseEther("0.4"),
-        gasLimit: 20000000,
-    })
+    const tx = await manager.invest(ethers.parseEth(), "", 3000)
     const receipt = await tx.wait()
     console.log(`invested: ${JSON.stringify(receipt)}`)
     const [token, amount] = await manager.getDeposit()

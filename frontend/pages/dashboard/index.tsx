@@ -1,11 +1,11 @@
 import styles from "../../styles/Home.module.scss";
-import DashboardComponent from '../../components/dashboard/DashboardComponent';
+import Dashboard from '../../components/dashboard/Dashboard';
 
 export default function DashboardPage() {
     return (
         <div>
             <main className={styles.main}>
-                <DashboardComponent></DashboardComponent>
+                <Dashboard></Dashboard>
             </main>
         </div>
     );

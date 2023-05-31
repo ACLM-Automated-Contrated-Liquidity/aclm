@@ -7,19 +7,34 @@ body {
 	font-weight: normal;
 	font-size: 16px;
 }
-h1{
+
+body {
+	--chakra-fontSizes-4xl: 18px;
+	--chakra-radii-md: 1.2rem;
+	--chakra-shadows-base:
+					0px 0px 24px -16px rgba(0,0,0, 0.1),
+					0px 32px 60px rgba(0,0,0,0.1);
+}
+
+.chakra-card__header h2 {
+	font-size: 18px;
+	font-weight: 500;
+}
+
+.chakra-card__header {
+	padding: 24px !important;
+}
+
+.chakra-slider__thumb[role="slider"] {
+	border: solid 2px #6799cf;
+}
+
+h1 {
 	margin-bottom: 1rem;
 }
-h2{
+h2 {
 	margin-bottom: .5rem;
 	font-weight: normal;
-
-}
-
-p{
-	line-height: 1.5rem;
-	font-weight: lighter;
-
 }
 
 a {

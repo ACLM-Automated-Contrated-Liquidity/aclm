@@ -13,27 +13,31 @@
 		"@chakra-ui/react": "^2.6.0",
 		"@emotion/react": "^11.10.8",
 		"@emotion/styled": "^11.10.8",
+		"@enzoferey/ethers-error-parser": "^0.2.3",
 		"@fortawesome/fontawesome-svg-core": "^6.4.0",
 		"@fortawesome/free-regular-svg-icons": "^6.4.0",
 		"@fortawesome/react-fontawesome": "^0.2.0",
 		"@moralisweb3/next": "^2.19.0",
-		"@rainbow-me/rainbowkit": "^0.12.4",
+		"@rainbow-me/rainbowkit": "1.0.1",
 		"alchemy-sdk": "^2.6.2",
 		"axios": "^1.4.0",
+		"chart.js": "3.6.0",
+		"chartjs-plugin-dragdata": "2.1.0",
 		"cryptocurrency-icons": "^0.18.1",
-		"ethers": "5.7.2",
+		"ethers": "6.4.0",
 		"framer-motion": "^10.12.4",
 		"moment": "^2.29.4",
 		"moralis": "^2.19.0",
 		"next": "13.1.2",
 		"next-auth": "^4.22.1",
 		"react": "18.2.0",
+		"react-chartjs-2": "3.3.0",
 		"react-dom": "18.2.0",
 		"react-icons": "^4.8.0",
 		"react-vis": "^1.11.12",
 		"rxjs": "^7.8.1",
 		"sass": "^1.62.1",
-		"wagmi": "^0.12.12"
+		"wagmi": "1.0.8"
 	},
 	"devDependencies": {
 		"@types/react": "18.2.0",
@@ -41,6 +45,7 @@
 		"eslint": "8.36.0",
 		"eslint-config-next": "13.2.4",
 		"reflect-metadata": "0.1.13",
-		"typescript": "5.0.4"
+		"typescript": "5.0.4",
+		"viem": "^0.3.37"
 	}
 }

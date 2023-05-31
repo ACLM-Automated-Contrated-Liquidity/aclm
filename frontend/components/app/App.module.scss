@@ -20,7 +20,7 @@ $border-radius: 16px;
   justify-content: center;
   width: 72px;
   height: 72px;
-  //background: #ffa2c0;
+  background: #ffa2c0;
   background: #9bc4ff;
   border-radius: 8px;
 
@@ -29,11 +29,29 @@ $border-radius: 16px;
   }
 }
 
+.header {
+  padding: 16px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: space-between;
+
+  & > {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
 .row {
   padding: 16px;
   border-radius: 8px;
   align-items: center;
   cursor: pointer;
+
+  & > div {
+    flex: 1;
+    justifiy-content: center;
+  }
 
   & > * + * {
     margin-left: 32px;
