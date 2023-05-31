@@ -5,7 +5,6 @@ pragma abicoder v2;
 import "../external/interfaces.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "./Structs.sol";
-import "./TickMath.sol";
 import "hardhat/console.sol";
 
 abstract contract Minter {
@@ -50,14 +49,8 @@ abstract contract Minter {
                 token0: toMint.token0,
                 token1: toMint.token1,
                 fee: toMint.fee,
-                tickLower: TickMath.nearestUsableTick(
-                    toMint.tickLower,
-                    uint24(toMint.tickSpacing)
-                ),
-                tickUpper: TickMath.nearestUsableTick(
-                    toMint.tickUpper,
-                    uint24(toMint.tickSpacing)
-                ),
+                tickLower: toMint.tickLower,
+                tickUpper: toMint.tickUpper,
                 amount0Desired: toMint.amount0Desired,
                 amount1Desired: toMint.amount1Desired,
                 amount0Min: 0,
@@ -123,6 +116,7 @@ abstract contract Minter {
             amount0: amount0,
             amount1: amount1
         });
+        tokenIds.push(tokenId);
     }
 
     function safeApprove(address token, address to, uint256 value) internal {

@@ -11,14 +11,9 @@ async function main() {
         "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
         deployer
     )
-    const tx = await manager.deposit({
-        value: ethers.utils.parseEther("0.3"),
-        gasLimit: 2000000,
-    })
-    const receipt = await tx.wait()
-    console.log(`deposit tx: ${receipt.transactionHash}`)
-    const balance = await manager.getBalance()
-    console.log(`Balance on contract: ${balance}`)
+    const [upkeepNeeded, lps] = await manager.checkUpkeep([])
+    console.log(`upkeep needed: ${upkeepNeeded}`)
+    console.log(`tokens: ${lps}`)
 }
 
 main()
