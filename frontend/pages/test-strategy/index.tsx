@@ -4,6 +4,7 @@ import 'react-vis/dist/style.css';
 import {Flex, Box, FormControl, FormLabel, Input} from '@chakra-ui/react';
 import {PriceEndpoints} from '../../endpoints/price.endpoints';
 import * as moment from 'moment';
+import CenteredLayout from '../../layout/centeredLayout';
 
 declare type Series = Point[];
 
@@ -126,41 +127,43 @@ export default class TestStrategyPage extends Component<any, StrategyState> {
 
     render() {
         return (
-            <Flex>
-                <XYPlot
-                    width={800}
-                    height={400}
-                    xTime='time'
-                    xDomain={[this.state.data[0]?.x, this.state.data[this.state.data.length - 1]?.x]}
-                    yDomain={this.updateBounds()}
-                >
-                    <VerticalGridLines />
-                    <HorizontalGridLines />
-                    <XAxis
-                        tickTotal={5}
-                        tickFormat={v => moment(v).format('DD/MM/YYYY mm:hh:ss')}
-                    />
-                    <YAxis />
-                    <LineSeries data={this.state.data} />
-                    <LineSeries className='lowerPrice' data={this.state.data1} />
-                    <LineSeries className='upperPrice' data={this.state.data2} />
-                </XYPlot>
+            <CenteredLayout>
+                <Flex>
+                    <XYPlot
+                        width={800}
+                        height={400}
+                        xTime='time'
+                        xDomain={[this.state.data[0]?.x, this.state.data[this.state.data.length - 1]?.x]}
+                        yDomain={this.updateBounds()}
+                    >
+                        <VerticalGridLines />
+                        <HorizontalGridLines />
+                        <XAxis
+                            tickTotal={5}
+                            tickFormat={v => moment(v).format('DD/MM/YYYY mm:hh:ss')}
+                        />
+                        <YAxis />
+                        <LineSeries data={this.state.data} />
+                        <LineSeries className='lowerPrice' data={this.state.data1} />
+                        <LineSeries className='upperPrice' data={this.state.data2} />
+                    </XYPlot>
 
-                <Box marginLeft='64px'>
-                    <FormControl>
-                        <FormLabel>Balance</FormLabel>
-                        <Input readOnly value={this.state.balance}></Input>
-                    </FormControl>
-                    <FormControl>
-                        <FormLabel>Usdt tokens</FormLabel>
-                        <Input readOnly value={this.state.token1}></Input>
-                    </FormControl>
-                    <FormControl>
-                        <FormLabel>Eth tokens</FormLabel>
-                        <Input readOnly value={this.state.token2}></Input>
-                    </FormControl>
-                </Box>
-            </Flex>
+                    <Box marginLeft='64px'>
+                        <FormControl>
+                            <FormLabel>Balance</FormLabel>
+                            <Input readOnly value={this.state.balance}></Input>
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>Usdt tokens</FormLabel>
+                            <Input readOnly value={this.state.token1}></Input>
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>Eth tokens</FormLabel>
+                            <Input readOnly value={this.state.token2}></Input>
+                        </FormControl>
+                    </Box>
+                </Flex>
+            </CenteredLayout>
         );
     }
 }

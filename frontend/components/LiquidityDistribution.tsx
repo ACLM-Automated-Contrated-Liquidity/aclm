@@ -61,7 +61,7 @@ export class LiquidityDistribution extends Component<LiquidityDistributionProps,
         return (
             <XYPlot width={280} height={160} className={styles.chart}>
                 <XAxis />
-                <VerticalBarSeries data={liquidity}/>
+                <VerticalBarSeries barWidth={1} data={liquidity}/>
                 <LineSeries data={this.state.line1}></LineSeries>
                 <LineSeries data={this.state.line2}></LineSeries>
             </XYPlot>

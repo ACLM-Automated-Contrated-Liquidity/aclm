@@ -11,7 +11,7 @@ export default function Navbar() {
 					<Text><a href='/dashboard'>Dashboard</a></Text>
 				</Flex>
 
-				<ConnectButton className={styles.connectButton}></ConnectButton>
+				<ConnectButton></ConnectButton>
 			</Flex>
 		</nav>
 	);

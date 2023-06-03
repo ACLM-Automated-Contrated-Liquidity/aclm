@@ -20,7 +20,7 @@ interface CreatePositionProps {
 
 export default function CreatePositionWindow(props: CreatePositionProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const {deposit, setDeposit} = useState(0);
+    const [deposit, setDeposit] = useState(0);
     const [showChart, setShowChart] = useState(false);
 
     useEffect(() => {
@@ -51,7 +51,7 @@ export default function CreatePositionWindow(props: CreatePositionProps) {
                                 <Input
                                     defaultValue={1000}
                                     value={deposit}
-                                    onChange={(val) => setDeposit(val)}></Input>
+                                    onChange={(val) => setDeposit(Number(val))}></Input>
                             </FormControl>
 
                             <Flex style={{marginTop: '16px'}}>

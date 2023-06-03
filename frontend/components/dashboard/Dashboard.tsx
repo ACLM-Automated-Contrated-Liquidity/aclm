@@ -4,11 +4,38 @@ import styles from '../app/App.module.scss';
 import {useRouter} from 'next/router';
 import PairTokensIcon, {Token} from '../pair-tokens-icon/PairTokensIcon';
 import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
+import {BrowserProvider, Contract} from 'ethers';
+
+const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
 
 export default function Dashboard() {
     const router = useRouter();
     const [showWindow, setShowWindow] = useState(false);
+    const [positions, setPositions] = useState([]);
+
+    useEffect(() => {
+        const initBalance = async () => {
+            let provider = new BrowserProvider((window as any).ethereum);
+
+            const abi = [
+                {
+                    "inputs": [],
+                    "name": "getPositions",
+                    "outputs": [{"internalType": "uint256[]", "name": "", "type": "uint256[]"}],
+                    "stateMutability": "view",
+                    "type": "function",
+                }
+            ];
+            const contract = new Contract(CONTRACT_ADDRESS, abi, provider);
+            let pos = await contract.getPositions();
+
+            setPositions(pos);
+        }
+
+        initBalance()
+            .catch(console.error);
+    }, []);
 
     return (
         <Box width='100%' marginTop='24px'>

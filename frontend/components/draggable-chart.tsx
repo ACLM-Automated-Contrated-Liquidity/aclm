@@ -106,14 +106,14 @@ export default function DraggableChart(props) {
 
     return (
         <div>
-            {isLoaded &&
-                <Bar
-                    redraw={shouldRedraw}
-                    data={localOption.data}
-                    options={localOption.options}
-                    plugins={localOption.options.plugins}
-                />
-            }
+            {/*{isLoaded &&*/}
+            {/*    <Bar*/}
+            {/*        redraw={shouldRedraw}*/}
+            {/*        data={localOption.data}*/}
+            {/*        options={localOption.options}*/}
+            {/*        plugins={localOption.options.plugins}*/}
+            {/*    />*/}
+            {/*}*/}
 
         </div>
     );

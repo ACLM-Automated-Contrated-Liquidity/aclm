@@ -1,12 +1,7 @@
-import styles from "../styles/Home.module.scss";
-import AppComponent from '../components/app/AppComponent';
+import Landing2 from './landing2';
 
 export default function Home() {
   return (
-    <div>
-      <main className={styles.main}>
-        <AppComponent></AppComponent>
-      </main>
-    </div>
+      <Landing2></Landing2>
   );
 }
