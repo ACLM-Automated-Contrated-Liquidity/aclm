@@ -23,7 +23,7 @@ import "hardhat/console.sol";
  * @author Yury Samarin
  * @notice  Allows single button investment ( see #invest method).
  */
-contract InvestmentManager is Minter, Updater {
+contract InvestmentManagerOld is Minter, Updater {
     mapping(address => uint) internal balances;
 
     struct Investment {
@@ -140,7 +140,11 @@ contract InvestmentManager is Minter, Updater {
         createAndMintBestPosition(otherToken, fee, amountIn, amountOut, rangePercent100);
     }
 
-    function _wrap(address user, uint amount) public {
+    function wrap(uint amount) external {
+        _wrap(msg.sender, amount);
+    }
+
+    function _wrap(address user, uint amount) internal {
         uint balance = balances[user];
         require(balance >= amount, "Not enough balance!");
         WrappedToken(nativeWrapperContract).deposit{value: amount}();
@@ -179,7 +183,14 @@ contract InvestmentManager is Minter, Updater {
     }
 
     function getDeposit(address tokenContract) public view returns (uint amount) {
-        Investment[] memory dep = investments[msg.sender];
+        return _getDeposit(tokenContract, msg.sender);
+    }
+
+    function _getDeposit(
+        address tokenContract,
+        address owner
+    ) internal view returns (uint amount) {
+        Investment[] memory dep = investments[owner];
         for (uint i = 0; i < dep.length; i++) {
             if (dep[i].tokenContract == tokenContract) {
                 return dep[i].amount;
@@ -276,6 +287,20 @@ contract InvestmentManager is Minter, Updater {
         ) = INonfungiblePositionManager(nonfungiblePositionManager).positions(tokenId);
         console.log("tokens owed: %s; %s", tokensOwed0, tokensOwed1);
 
+        // TODO: Check that only token owner can do that
+        INonfungiblePositionManager.CollectParams memory collect = INonfungiblePositionManager
+            .CollectParams({
+                tokenId: tokenId,
+                recipient: address(this),
+                amount0Max: tokensOwed0,
+                amount1Max: tokensOwed1
+            });
+
+        (uint oweAmount0, uint oweAmount1) = INonfungiblePositionManager(
+            nonfungiblePositionManager
+        ).collect(collect);
+        console.log("Owe amounts collected: %s; %s", oweAmount0, oweAmount1);
+
         INonfungiblePositionManager.DecreaseLiquidityParams
             memory params = INonfungiblePositionManager.DecreaseLiquidityParams({
                 tokenId: tokenId,
@@ -288,20 +313,6 @@ contract InvestmentManager is Minter, Updater {
         (uint amount0, uint amount1) = INonfungiblePositionManager(nonfungiblePositionManager)
             .decreaseLiquidity(params);
         console.log("Decreased liquidity amounts: %s; %s", amount0, amount1);
-
-        // TODO: Check that only token owner can do that
-        INonfungiblePositionManager.CollectParams memory collect = INonfungiblePositionManager
-            .CollectParams({
-                tokenId: tokenId,
-                recipient: address(this),
-                amount0Max: type(uint128).max,
-                amount1Max: type(uint128).max
-            });
-
-        (uint oweAmount0, uint oweAmount1) = INonfungiblePositionManager(
-            nonfungiblePositionManager
-        ).collect(collect);
-        console.log("Owe amounts collected: %s; %s", oweAmount0, oweAmount1);
 
         Deposit memory dep = deposits[tokenId];
         _deposit(dep.token0, amount0 + oweAmount0, dep.owner);
@@ -396,10 +407,4 @@ contract InvestmentManager is Minter, Updater {
             return ((dep1 * (proportion - 1)) / (proportion * 2), true);
         }
     }
-}
-
-interface WrappedToken {
-    function deposit() external payable;
-
-    function withdraw(uint wad) external;
 }
