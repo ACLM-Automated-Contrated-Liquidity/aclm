@@ -1,9 +1,9 @@
-import React, {Component, useEffect, useState} from 'react';
+import React, {Component} from 'react';
 import styles from '../pages/create-position/create-position.module.scss';
-import {LineSeries, VerticalBarSeries, XAxis, XYPlot, YAxis} from 'react-vis';
+import {LineSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 import {PriceEndpoints} from '../endpoints/price.endpoints';
 import {Series} from '../interfaces';
-import * as moment from 'moment';
+import moment from "moment";
 
 interface PriceChartProps {
     lowerBound: number;

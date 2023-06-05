@@ -51,7 +51,7 @@ export default function CreatePositionPage() {
 
     let deposit = () => {
         const initBalance = async () => {
-            let provider = new BrowserProvider(window.ethereum);
+            let provider = new BrowserProvider((window as any).ethereum);
             let signer = await provider.getSigner();
 
             const contractABI = [{
@@ -86,7 +86,7 @@ export default function CreatePositionPage() {
 
     let invest = () => {
         const initBalance = async () => {
-            let provider = new BrowserProvider(window.ethereum);
+            let provider = new BrowserProvider((window as any).ethereum);
             let signer = await provider.getSigner();
 
             const contractABI = [{
@@ -154,7 +154,7 @@ export default function CreatePositionPage() {
                                         min={1700}
                                         max={2200}
                                         defaultValue={[1850, 1900]}
-                                        onChange={range => onRangeChanged(range)}
+                                        onChange={range => onRangeChanged(range as [number, number])}
                                     >
                                         <RangeSliderMark
                                             value={lowerBound}

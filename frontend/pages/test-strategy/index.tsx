@@ -1,9 +1,9 @@
 import {HorizontalGridLines, LineSeries, VerticalGridLines, XAxis, XYPlot, YAxis} from 'react-vis';
-import React, {Component, useEffect, useState} from 'react';
+import React, {Component} from 'react';
 import 'react-vis/dist/style.css';
 import {Flex, Box, FormControl, FormLabel, Input} from '@chakra-ui/react';
 import {PriceEndpoints} from '../../endpoints/price.endpoints';
-import * as moment from 'moment';
+import moment from 'moment';
 import CenteredLayout from '../../layout/centeredLayout';
 
 declare type Series = Point[];

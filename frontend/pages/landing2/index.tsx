@@ -20,7 +20,7 @@ export default function Landing2() {
             </div>
             <Flex className={styles.part1}>
                 <Flex className={styles.title} flex={1}>
-                    <h1>Unleash ultimate possibilities of <span class={styles.highlight}>Concentrated Liquidity</span></h1>
+                    <h1>Unleash ultimate possibilities of <span className={styles.highlight}>Concentrated Liquidity</span></h1>
                     <Button
                         alignSelf='start'
                         className={styles.launchBtn}
@@ -36,7 +36,7 @@ export default function Landing2() {
 
             <Flex className={styles.part2}>
                 <Flex className={styles.title} flex={1}>
-                    <h1 >Unleash ultimate possibilities of <span class={styles.highlight}>Concentrated Liquidity</span></h1>
+                    <h1 >Unleash ultimate possibilities of <span className={styles.highlight}>Concentrated Liquidity</span></h1>
                 </Flex>
                 <Flex flex={1}>
                 </Flex>

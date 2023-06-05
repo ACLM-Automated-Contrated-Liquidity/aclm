@@ -91,8 +91,8 @@ export default function PriceSimulation() {
                 </RangeSlider>
 
                 <Flex>
-                    <Input placehoder='Value from' value={p1} readOnly={true}/>
-                    <Input placehoder='Value from' value={p2} readOnly={true}/>
+                    <Input placeholder='Value from' value={p1} readOnly={true}/>
+                    <Input placeholder='Value from' value={p2} readOnly={true}/>
                 </Flex>
             </div>
 

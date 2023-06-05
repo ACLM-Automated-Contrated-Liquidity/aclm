@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
+		"export": "next export",
 		"start": "next start",
 		"lint": "next lint",
 		"marketplace": "npx create-web3-dapp marketplace"
@@ -41,6 +42,7 @@
 		"wagmi": "1.0.8"
 	},
 	"devDependencies": {
+		"@types/moment": "^2.13.0",
 		"@types/react": "18.2.0",
 		"@types/react-vis": "^1.11.11",
 		"eslint": "8.36.0",

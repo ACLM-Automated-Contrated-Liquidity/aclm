@@ -14,8 +14,6 @@ import styles from './create-position.module.scss';
 import PanelComponent from '../../components/PanelComponent';
 import React, {useState} from 'react';
 import {LineSeries, HorizontalGridLines, VerticalGridLines, XYPlot, VerticalBarSeries, XAxis} from 'react-vis';
-import LiquidityDistribution from '../../components/LiquidityDistribution';
-import PriceChart from '../../components/PriceChart';
 
 const rawData = [
     {label: 'Mon', aValue: 40, bValue: 62},
@@ -119,15 +117,10 @@ export default function CreatePositionPage() {
                                         <VerticalGridLines />
                                         <HorizontalGridLines />
                                         <LineSeries
-                                            mask='url(#test)'
                                             curve="curveNatural"
                                             data={data}
                                         />
                                     </XYPlot>
-                                    {/*<div className={styles.fill1}></div>*/}
-                                    {/*<div className={styles.fill2}></div>*/}
-                                    {/*<div className={styles.gradient1}></div>*/}
-                                    {/*<div className={styles.gradient2}></div>*/}
 
                                     <b>Backtest results based on the last month</b>
 
@@ -235,8 +228,7 @@ export default function CreatePositionPage() {
                             <Flex alignItems='center' flex={1} justifyContent='center' flexDirection='column'>
                                 <XYPlot width={300} height={250} className={styles.chart}>
                                     <XAxis />
-                                    <VerticalBarSeries data={data2}/>
-                                    <LineSeries data={line1}></LineSeries>
+                                    <VerticalBarSeries barWidth={1} data={data2}/>
                                 </XYPlot>
                                 <Box width='200px'>
                                     <RangeSlider

@@ -5,9 +5,12 @@ import {useRouter} from 'next/router';
 import PairTokensIcon, {Token} from '../pair-tokens-icon/PairTokensIcon';
 import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
 import {useEffect, useState} from 'react';
-import {BrowserProvider, Contract} from 'ethers';
+import {BrowserProvider, Contract, parseEther} from 'ethers';
 
-const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
+// const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
+const CONTRACT_ADDRESS = '0xDa7AE6a19AE82d43bC00AB9c5DC470D5f5cAFb4b';
+const USDC = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+const MATIC = '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0';
 
 export default function Dashboard() {
     const router = useRouter();
@@ -21,14 +24,14 @@ export default function Dashboard() {
             const abi = [
                 {
                     "inputs": [],
-                    "name": "getPositions",
-                    "outputs": [{"internalType": "uint256[]", "name": "", "type": "uint256[]"}],
+                    "name": "getAllPosition",
+                    "outputs": [{"internalType": "uint[]", "name": "memory", "type": "uint[]"}],
                     "stateMutability": "view",
                     "type": "function",
                 }
             ];
             const contract = new Contract(CONTRACT_ADDRESS, abi, provider);
-            let pos = await contract.getPositions();
+            let pos = await contract.getAllPosition();
 
             setPositions(pos);
         }
@@ -37,8 +40,47 @@ export default function Dashboard() {
             .catch(console.error);
     }, []);
 
+    const invest = () => {
+        const investFn = async () => {
+            let provider = new BrowserProvider((window as any).ethereum);
+            let signer = await provider.getSigner();
+
+            const contractABI = [{
+                "inputs": [
+                    {"internalType":"address","name":"token0","type":"address"},
+                    {"internalType":"address","name":"token1","type":"address"},
+                    {"internalType":"uint24","name":"fee","type":"uint24"},
+                    {"internalType":"uint","name":"amount0","type":"uint"},
+                    {"internalType":"uint","name":"amount1","type":"uint"},
+                    {"internalType":"int24","name":"tickLower","type":"int24"},
+                    {"internalType":"int24","name":"tickUpper","type":"int24"},
+                ],
+                "name": "invest",
+                "outputs": [],
+                "stateMutability": "payable",
+                "type": "function",
+            }];
+
+            let contract = new Contract(CONTRACT_ADDRESS, contractABI, signer)
+            let amount = parseEther("0.1");
+
+            // Create the transaction
+            const receipt = await contract.invest(
+                MATIC, USDC, 3000, 0.1, 0.1,
+                {
+                    value: parseEther("0.01"),
+                    gasLimit: 20000000,
+                });
+        }
+
+        investFn()
+            .catch(console.error);
+    }
+
     return (
         <Box width='100%' marginTop='24px'>
+            <button onClick={() => invest()}>Button</button>
+
             <PanelComponent className={styles.container}>
                 <b style={{display: 'block', padding: '16px'}}>Available pools</b>
                 <Flex className={styles.header}>

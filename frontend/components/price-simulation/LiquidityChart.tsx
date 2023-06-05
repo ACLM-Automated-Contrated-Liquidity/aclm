@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
-import {PriceEndpoints} from '../../endpoints/price.endpoints';
 import {
     Hint,
     HorizontalGridLines,
-    LineSeries,
     VerticalBarSeries,
     VerticalGridLines,
     XAxis,
@@ -13,17 +11,17 @@ import {
 import {Box} from '@chakra-ui/react';
 
 export interface LiquidityChartProps {
-    p1: number;
-    p2: number;
-    pc: number;
-    nHedge: number;
-    investedSum: number;
+    p1?: number;
+    p2?: number;
+    pc?: number;
+    nHedge?: number;
+    investedSum?: number;
 }
 export interface LiquidityChartState {
     token1?: {x: number, y: number}[];
     token2?: {x: number, y: number}[];
     tooltipValue?: any;
-    price: number;
+    price?: number;
 }
 
 export class LiquidityChart extends Component<LiquidityChartProps, LiquidityChartState> {
@@ -98,8 +96,8 @@ export class LiquidityChart extends Component<LiquidityChartProps, LiquidityChar
                     <HorizontalGridLines />
                     <XAxis tickLabelAngle={-90}/>
                     <YAxis />
-                    <VerticalBarSeries data={this.state.token1} onValueMouseOver={this.setTooltipValue()}/>
-                    <VerticalBarSeries data={this.state.token2} onValueMouseOver={this.setTooltipValue()}/>
+                    <VerticalBarSeries barWidth={1} data={this.state.token1} onValueMouseOver={this.setTooltipValue()}/>
+                    <VerticalBarSeries barWidth={1} data={this.state.token2} onValueMouseOver={this.setTooltipValue()}/>
                     {this.state.tooltipValue ? <Hint value={this.state.tooltipValue} /> : null}
                 </XYPlot>
             </Box>
