@@ -7,8 +7,8 @@ async function main() {
     console.log("Calling contract with the account: ", deployer.address)
 
     const manager = await ethers.getContractAt(
-        "InvestmentManager",
-        "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
+        "InvestmentManagerImpl",
+        "0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD",
         deployer
     )
     const [upkeepNeeded, lps] = await manager.checkUpkeep([])

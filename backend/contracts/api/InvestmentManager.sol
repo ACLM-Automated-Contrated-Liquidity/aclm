@@ -153,7 +153,7 @@ interface InvestmentManager {
      * Collects fee, removes liquidity and burns position
      * @param tokenId - position ID to be removed.
      */
-    function removePosition(uint tokenId) external;
+    function removePosition(uint tokenId) external returns (MintedPosition memory);
 
     /**
      * Converts specified amount back to native coin.

@@ -7,8 +7,8 @@ async function main() {
     console.log("Calling contract with the account: ", deployer.address)
 
     const manager = await ethers.getContractAt(
-        "InvestmentManager",
-        "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
+        "InvestmentManagerImpl",
+        "0x197A2514cdbCc93890108CB6eC27FE9796dF3185",
         deployer
     )
     const tx = await manager.performUpkeep([], { gasLimit: 5000000 })

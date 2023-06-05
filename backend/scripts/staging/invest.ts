@@ -7,8 +7,8 @@ async function computeTicks(poolAddr: string): Promise<[number, number]> {
     const pool = await ethers.getContractAt("IUniswapV3Pool", poolAddr)
     const slot = await pool.slot0()
     const spacing = await pool.tickSpacing()
-    const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 20
-    const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 20
+    const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 1
+    const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 1
     return [tickLower, tickUpper]
 }
 
@@ -18,7 +18,7 @@ async function main() {
 
     const manager = await ethers.getContractAt(
         "InvestmentManager",
-        "0xDa7AE6a19AE82d43bC00AB9c5DC470D5f5cAFb4b",
+        "0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD",
         deployer
     )
 
@@ -28,14 +28,14 @@ async function main() {
             NetAddrs[hre.network.name].WETH,
             NetAddrs[hre.network.name].USDC,
             3000,
-            ethers.utils.parseEther("0.2"),
-            ethers.utils.parseUnits("4774", 6),
+            ethers.utils.parseEther("0.05"),
+            ethers.utils.parseUnits("1000", 6),
             tickLower,
             tickUpper,
         ],
         {
-            value: ethers.utils.parseEther("0.4"),
-            gasLimit: 20000000,
+            value: ethers.utils.parseEther("0.1"),
+            gasLimit: 5000000,
         }
     )
 

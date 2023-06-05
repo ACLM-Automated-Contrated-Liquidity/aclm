@@ -5,14 +5,15 @@ pragma abicoder v2;
 import "./api/InvestmentManager.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
-
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "./external/interfaces.sol";
 import "hardhat/console.sol";
 import "./utils/Arrays.sol";
+import "./utils/TickMath.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@chainlink/contracts/src/v0.8/AutomationCompatible.sol";
 
-contract InvestmentManagerImpl is InvestmentManager {
+contract InvestmentManagerImpl is InvestmentManager, AutomationCompatibleInterface {
     mapping(address => uint) internal balances;
 
     struct Investment {
@@ -28,6 +29,12 @@ contract InvestmentManagerImpl is InvestmentManager {
 
     mapping(address => uint256[]) internal tokensByOwner;
 
+    uint public immutable interval;
+    uint public lastTimeStamp;
+
+    event UpkeepPerformed(uint indexed tokenId);
+    event UpdateStarted();
+
     address internal immutable nativeWrapperContract;
     ISwapRouter internal immutable swapRouter =
         ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -36,8 +43,10 @@ contract InvestmentManagerImpl is InvestmentManager {
     INonfungiblePositionManager internal immutable nonfungiblePositionManager =
         INonfungiblePositionManager(0xC36442b4a4522E871399CD717aBDD847Ab11FE88);
 
-    constructor(address _nativeWrapper) {
+    constructor(address _nativeWrapper, uint _interval) {
         nativeWrapperContract = _nativeWrapper;
+        interval = _interval;
+        lastTimeStamp = block.timestamp;
     }
 
     event Received(address indexed, uint);
@@ -377,7 +386,7 @@ contract InvestmentManagerImpl is InvestmentManager {
         return minted[tokenId];
     }
 
-    function getTickOutOfRangePositions() external view override returns (uint[] memory) {
+    function getTickOutOfRangePositions() public view override returns (uint[] memory) {
         console.log("total positions: %s", tokenIds.length);
         uint[] memory outOfRange = new uint[](tokenIds.length);
         uint count;
@@ -404,9 +413,47 @@ contract InvestmentManagerImpl is InvestmentManager {
         return res;
     }
 
-    function updatePosition(uint tokenId) external override {}
+    function updatePosition(uint tokenId) public override {
+        console.log("Who is message sender?: %s", msg.sender);
+        MintedPosition memory removed = removePosition(tokenId);
+        rebalance(removed.token0, removed.token1, removed.fee, removed.owner);
 
-    function removePosition(uint tokenId) external override {
+        (int24 tickLower, int24 tickUpper) = _computeNewTicks(removed);
+        console.log("New ticks: ");
+        console.logInt(tickLower);
+        console.logInt(tickUpper);
+        uint amount0 = _getTokenUserBalance(removed.token0, removed.owner);
+        uint amount1 = _getTokenUserBalance(removed.token1, removed.owner);
+        console.log("rebalanced amounts: %s, %s", amount0, amount1);
+        Position memory toMint = Position(
+            removed.token0,
+            removed.token1,
+            removed.fee,
+            tickLower,
+            tickUpper,
+            amount0,
+            amount1,
+            removed.owner
+        );
+        _mint(toMint);
+    }
+
+    function _computeNewTicks(MintedPosition memory removed) internal view returns (int24, int24) {
+        address pool = factory.getPool(removed.token0, removed.token1, removed.fee);
+        console.log("Found pool: %s", pool);
+        (uint160 sqrtPriceX96, int24 tick, , , , , ) = IUniswapV3Pool(pool).slot0();
+        console.log("SqrtPriceX96: %s; Pool tick: ", sqrtPriceX96);
+        console.logInt(tick);
+
+        int24 spacing = IUniswapV3Pool(pool).tickSpacing();
+        int24 range = (removed.tickUpper - removed.tickLower) / 2;
+
+        int24 tickLower = TickMath.nearestUsableTick(tick - range, uint24(spacing));
+        int24 tickUpper = TickMath.nearestUsableTick(tick + range, uint24(spacing));
+        return (tickLower, tickUpper);
+    }
+
+    function removePosition(uint tokenId) public override returns (MintedPosition memory) {
         (, , , , , , , uint128 liquidity, , , , ) = nonfungiblePositionManager.positions(tokenId);
 
         INonfungiblePositionManager.DecreaseLiquidityParams
@@ -444,6 +491,18 @@ contract InvestmentManagerImpl is InvestmentManager {
         tokenIds.pop();
         Arrays.removeByValue(tokenId, tokensByOwner[dep.owner]);
         tokensByOwner[dep.owner].pop();
+        return
+            MintedPosition(
+                dep.owner,
+                dep.tickLower,
+                dep.tickUpper,
+                liquidity,
+                dep.token0,
+                dep.token1,
+                dep.fee,
+                oweAmount0,
+                oweAmount1
+            );
     }
 
     function unwrap(uint amount) external override {
@@ -499,5 +558,92 @@ contract InvestmentManagerImpl is InvestmentManager {
         balances[msg.sender] += msg.value;
         console.log("Received some money: %s", msg.value);
         emit Received(msg.sender, msg.value);
+    }
+
+    function rebalance(address token0, address token1, uint24 fee, address owner) public {
+        uint dep0 = _getTokenUserBalance(token0, owner);
+        console.log("Curent deposit of token0: %s", dep0);
+
+        uint dep1 = _getTokenUserBalance(token1, owner);
+        console.log("Curent deposit of token1: %s", dep1);
+
+        address pool = factory.getPool(token0, token1, fee);
+        (uint160 sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
+        (uint amountIn, bool reverse) = computeAmountIn(dep0, dep1, sqrtPriceX96);
+        console.log("Amount IN: %s; Reverse: %s", amountIn, reverse);
+        uint amountOut = 0;
+        if (amountIn != 0) {
+            if (reverse) {
+                amountOut = _swapExactInput(token1, token0, amountIn, fee);
+                _decreaseDeposit(token1, owner, amountIn);
+                _deposit(token0, amountOut, owner);
+            } else {
+                amountOut = _swapExactInput(token0, token1, amountIn, fee);
+                _decreaseDeposit(token0, owner, amountIn);
+                _deposit(token1, amountOut, owner);
+            }
+        }
+        console.log("Swapped to amount: %s", amountOut);
+    }
+
+    function computeAmountIn(
+        uint dep0,
+        uint dep1,
+        uint sqrtPriceX96
+    ) public pure returns (uint, bool) {
+        if (dep0 == 0) {
+            return (dep1 / 2, true);
+        } else if (dep1 == 0) {
+            return (dep0 / 2, false);
+        }
+        bool reverse = false;
+        uint price = (sqrtPriceX96 ** 2) / ((uint(2) ** 96) ** 2);
+        if (price == 0) {
+            price = (((uint(2) ** 96) ** 2) / uint(sqrtPriceX96)) * uint(sqrtPriceX96);
+            reverse = true;
+        }
+        bool zeroToOne = false;
+        uint proportion = 0;
+        uint numer = reverse ? (dep1 * price) : dep1;
+        uint denom = reverse ? dep0 : dep0 * price;
+        if (numer > denom) {
+            proportion = numer / denom;
+        } else {
+            proportion = denom / numer;
+            zeroToOne = true;
+        }
+        if (proportion < 3) {
+            // no need to rebalance
+            return (0, false);
+        }
+        if (zeroToOne) {
+            return ((dep0 * (proportion - 1)) / (proportion * 2), false);
+        } else {
+            return ((dep1 * (proportion - 1)) / (proportion * 2), true);
+        }
+    }
+
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    ) public view override returns (bool upkeepNeeded, bytes memory performData) {
+        uint[] memory LPs = getTickOutOfRangePositions();
+        upkeepNeeded = ((block.timestamp - lastTimeStamp) > interval) && (LPs.length > 0);
+        performData = abi.encode(LPs);
+        console.log("Upkeep needed: %s", upkeepNeeded);
+    }
+
+    function performUpkeep(bytes calldata performData) external override {
+        //We highly recommend revalidating the upkeep in the performUpkeep function
+        (bool upkeepNeeded, bytes memory data) = checkUpkeep(performData);
+        require(upkeepNeeded, "Upkeep not needed");
+        emit UpdateStarted();
+        uint[] memory tokens = abi.decode(data, (uint[]));
+        console.log("Updating %s tokens", tokens.length);
+        for (uint i = 0; i < tokens.length; i++) {
+            console.log("Next position for update: %s", tokens[i]);
+            updatePosition(tokens[i]);
+        }
+        lastTimeStamp = block.timestamp;
+        emit UpkeepPerformed(tokens[0]);
     }
 }

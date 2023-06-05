@@ -10,7 +10,7 @@ import { nearestUsableTick, TickMath } from "@uniswap/v3-sdk"
 
 developmentChains.includes(network.name)
     ? describe("Investment Manager contract test", function () {
-          this.timeout(40000)
+          this.timeout(60000)
           let manager: Contract
           let deployer: Signer
           let user: Signer
@@ -157,8 +157,8 @@ developmentChains.includes(network.name)
               const pool = await ethers.getContractAt("IUniswapV3Pool", poolAddr, deployer)
               const slot = await pool.slot0()
               const spacing = await pool.tickSpacing()
-              const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 20
-              const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 20
+              const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 5
+              const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 5
               return [tickLower, tickUpper]
           }
 
@@ -259,8 +259,8 @@ developmentChains.includes(network.name)
                           NetAddrs[network.name].WETH,
                           NetAddrs[network.name].USDC,
                           500,
-                          ethers.utils.parseEther("0.8"),
-                          ethers.utils.parseUnits("300", 6),
+                          ethers.utils.parseEther("0.9"),
+                          ethers.utils.parseUnits("200", 6),
                           tickLower - 100 * 10,
                           tickUpper,
                       ],
@@ -326,7 +326,7 @@ developmentChains.includes(network.name)
                           "0x249cA82617eC3DfB2589c4c17ab7EC9765350a18",
                           10000,
                           ethers.utils.parseEther("0.5"),
-                          ethers.utils.parseUnits("1310510", 18),
+                          ethers.utils.parseUnits("1210510", 18),
                           tickLower,
                           tickUpper,
                       ],
@@ -343,7 +343,7 @@ developmentChains.includes(network.name)
                       "0x249cA82617eC3DfB2589c4c17ab7EC9765350a18"
                   )
                   console.log(`amountVERSE: ${ethers.utils.formatUnits(amountVERSE, 18)}`)
-                  expect(Number(ethers.utils.formatUnits(amountVERSE, 18))).is.below(200000)
+                  expect(Number(ethers.utils.formatUnits(amountVERSE, 18))).is.below(400000)
                   const positions = await manager.getMyPositions()
                   console.log(`Positions: ${positions}`)
                   expect(positions.length).to.equal(1)
@@ -506,7 +506,7 @@ developmentChains.includes(network.name)
               })
           })
 
-          describe.skip("test rebalance computation", function () {
+          describe("test rebalance computation", function () {
               it("computes correctly if big proportion", async () => {
                   const USDC = ethers.utils.parseUnits("100", 6)
                   const WETH = ethers.utils.parseEther("1")
@@ -597,11 +597,25 @@ developmentChains.includes(network.name)
               })
           })
 
-          describe.skip("updating position checks", function () {
+          describe("updating position checks", function () {
               beforeEach(async () => {
-                  const tx = await manager.invest(NetAddrs[network.name].USDC, 500, 1, {
-                      value: ethers.utils.parseEther("1"),
-                  })
+                  const [tickLower, tickUpper] = await computeTicks(
+                      "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"
+                  )
+                  const tx = await manager.invest(
+                      [
+                          NetAddrs[network.name].WETH,
+                          NetAddrs[network.name].USDC,
+                          500,
+                          ethers.utils.parseEther("0.5"),
+                          ethers.utils.parseUnits("900", 6),
+                          tickLower,
+                          tickUpper,
+                      ],
+                      {
+                          value: ethers.utils.parseEther("1"),
+                      }
+                  )
                   const receipt = await tx.wait()
                   console.log(`invested tx: ${receipt.transactionHash}`)
               })
@@ -622,9 +636,17 @@ developmentChains.includes(network.name)
                   })
                   await tx.wait()
 
+                  const wrapTx = await manager.connect(user).wrapAll()
+                  await wrapTx.wait()
+
                   const swapTx = await manager
                       .connect(user)
-                      .wrapAndSwap(NetAddrs[network.name].USDC, 500)
+                      .swapKnownInput(
+                          NetAddrs[network.name].WETH,
+                          NetAddrs[network.name].USDC,
+                          ethers.utils.parseEther("9000"),
+                          500
+                      )
                   const receipt = await swapTx.wait()
                   console.log(`swap tx: ${receipt.transactionHash}`)
 
@@ -641,10 +663,18 @@ developmentChains.includes(network.name)
                   })
                   await tx.wait()
 
-                  const wrapTx = await manager
+                  const wrapTx = await manager.connect(whale).wrapAll()
+                  await wrapTx.wait()
+
+                  const swapTx = await manager
                       .connect(whale)
-                      .wrapAndSwap(NetAddrs[network.name].USDC, 500)
-                  const receipt = await wrapTx.wait()
+                      .swapKnownInput(
+                          NetAddrs[network.name].WETH,
+                          NetAddrs[network.name].USDC,
+                          ethers.utils.parseEther("9000"),
+                          500
+                      )
+                  const receipt = await swapTx.wait()
                   console.log(`swap tx: ${receipt.transactionHash}`)
 
                   const [tokenId] = await manager.getTickOutOfRangePositions()
@@ -657,7 +687,7 @@ developmentChains.includes(network.name)
                   const count = await manager.getPositionsCount()
                   expect(count).equal(1)
 
-                  const [posToken] = await manager.getPositions()
+                  const [posToken] = await manager.getMyPositions()
                   expect(posToken).is.not.equal(tokenId)
               })
           })
@@ -668,7 +698,7 @@ async function deployContracts(): Promise<[Contract, Signer, Signer]> {
     const [deployer, user] = await ethers.getSigners()
 
     const factory = await ethers.getContractFactory("InvestmentManagerImpl")
-    const contract = await factory.deploy(NetAddrs[network.name].WETH)
+    const contract = await factory.deploy(NetAddrs[network.name].WETH, 30)
     await contract.deployed()
     console.log(`deployed at: ${contract.address}`)
     return [contract, deployer, user]

@@ -8,7 +8,7 @@ async function main() {
 
     const manager = await ethers.getContractAt(
         "InvestmentManager",
-        "0x796304266bc2C7884384Af20f894A5Ab434BaE6b",
+        "0x05AbA9E4f3A868B6dC951C8b35c1C7006691924c",
         deployer
     )
     const outOfRange = await manager.getTickOutOfRangePositions()
