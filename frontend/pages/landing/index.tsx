@@ -1,37 +1,46 @@
-import styles from "./landing.module.scss";
-import {Flex} from '@chakra-ui/react';
-import MainLayout from '../../layout/mainLayout';
+import styles from './landing.module.scss';
+import {Button, Flex, HStack} from '@chakra-ui/react';
+import {GiFizzingFlask} from 'react-icons/gi';
+import {useRouter} from 'next/router';
 
 export default function Landing() {
+    const router = useRouter();
+
     return (
-        <MainLayout>
-            <Flex className={styles.background} direction='column'>
-                <div className={styles.header}>
-                    <div className={styles.logo}>LiquidiFy</div>
-                    <Flex className={styles.headerItems} alignItems="center">
-                        <div>Docs</div>
-                        <div>Whitepaper</div>
-                        <a href={'/app'} className={styles.launch}>Launch App</a>
-                    </Flex>
-                </div>
-
-                <Flex className={styles.content} direction='column' flex='1'>
-                    <div className={styles.textBlock}>
-                        <h1>New era</h1>
-                        <h2>of concentrated liquidity</h2>
-                        <section>
-                            Introducing revolutionary Concentrated Liquidity Management Tool
-                            Whether you're looking to improve your working capital management,
-                            reduce your borrowing costs, or simply gain more visibility into your financial position,
-                            our Concentrated Liquidity Management Tool is the solution you've been searching for.
-                            Try it out today and start experiencing the benefits for yourself!
-                        </section>
-
-
-                        <a href={'/app'} className={`${styles.launch} ${styles.white} padding-top`}>Launch App</a>
-                    </div>
+        <div className={styles.page}>
+            <div className={styles.header}>
+                <Flex alignItems={'center'}>
+                    <GiFizzingFlask size={'50px'} color={'#aa0578'}></GiFizzingFlask>
+                    <div className={styles.logoName}><span className={styles.highlight} style={{fontSize: '24px'}}>Spellbound</span> pools</div>
+                </Flex>
+                <HStack alignItems={'center'} spacing={5}>
+                    <b>Documentation</b>
+                    <Button className={styles.launchBtn} onClick={() => router.push('/app')}>Launch App</Button>
+                </HStack>
+            </div>
+            <Flex className={styles.part1}>
+                <Flex className={styles.title} flex={1}>
+                    <h1>Unleash ultimate possibilities of <span className={styles.highlight}>Concentrated Liquidity</span></h1>
+                    <Button
+                        alignSelf='start'
+                        className={styles.launchBtn}
+                        onClick={() => router.push('/app')}
+                    >
+                        Launch App
+                    </Button>
+                </Flex>
+                <Flex flex={1} alignItems='center' justifyContent='center'>
+                    <div className={styles.image}></div>
                 </Flex>
             </Flex>
-        </MainLayout>
+
+            <Flex className={styles.part2}>
+                <Flex className={styles.title} flex={1}>
+                    <h1 >Unleash ultimate possibilities of <span className={styles.highlight}>Concentrated Liquidity</span></h1>
+                </Flex>
+                <Flex flex={1}>
+                </Flex>
+            </Flex>
+        </div>
     );
 }

@@ -8,7 +8,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faXmarkCircle} from '@fortawesome/free-regular-svg-icons';
 import CreatePositionWindow from '../dashboard/CreatePositionWindow/CreatePositionWindow';
 import {useRouter} from 'next/router';
-import PairTokensIcon, {Token} from '../pair-tokens-icon/PairTokensIcon';
+import PairTokensIcon, {TokenIcon} from '../pair-tokens-icon/PairTokensIcon';
 import {BrowserProvider, formatEther} from 'ethers';
 import CenteredLayout from '../../layout/centeredLayout';
 
@@ -71,7 +71,7 @@ export default function AppComponent() {
                     {[...Array(5)].map((x, i) =>
                         <Flex key={i} className={styles.row} onClick={() => router.push('/create-position')}>
                             <Flex>
-                                <PairTokensIcon token1={Token.ETH} token2={Token.USDC}></PairTokensIcon>
+                                <PairTokensIcon token1={TokenIcon.ETH} token2={TokenIcon.USDC}></PairTokensIcon>
                                 <Flex direction='column' justifyContent='center' marginLeft='16px'>
                                     <b>ETH-USDC-LP</b>
                                     <div>Fee 0.05%</div>

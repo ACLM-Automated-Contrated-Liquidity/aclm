@@ -1,7 +1,7 @@
-import Landing2 from './landing2';
+import Landing from './landing';
 
 export default function Home() {
   return (
-      <Landing2></Landing2>
+      <Landing></Landing>
   );
 }

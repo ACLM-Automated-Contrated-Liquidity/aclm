@@ -21,6 +21,10 @@ import {PriceChart} from '../../components/PriceChart';
 import {LiquidityDistribution} from '../../components/LiquidityDistribution';
 import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
 import RightSidePanelLayout from '../../layout/rightSidePanelLayout';
+import {CONTRACT_ABI, MATIC, USDC} from '../../interfaces/contract';
+import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
+import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
+import {Token} from '@uniswap/sdk-core';
 
 const rawData = [
     {label: 'Mon', aValue: 40, bValue: 62},
@@ -29,8 +33,25 @@ const rawData = [
     {label: 'Thu', aValue: 43, bValue: 54},
     {label: 'Fri', aValue: 33, bValue: 58},
 ];
-const USDC = "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23";
 const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
+const UNISWAP_FACTORY = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
+
+async function computeTicks(addr1: string, addr2: string, fee: number) {
+    const provider = new BrowserProvider((window as any).ethereum);
+    const poolAddr = computePoolAddress({
+        factoryAddress: UNISWAP_FACTORY,
+        tokenA: new Token(USDC.chainId, USDC.address, 6),
+        tokenB: new Token(MATIC.chainId, MATIC.address, 18),
+        fee: FeeAmount.MEDIUM,
+    });
+
+    const pool = new Contract(poolAddr, IUniswapV3PoolABI, provider);
+    const slot = await pool.slot0();
+    const spacing = await pool.tickSpacing();
+    const tickLower = nearestUsableTick(Number(slot.tick), Number(spacing)) - Number(spacing) * 20;
+    const tickUpper = nearestUsableTick(Number(slot.tick), Number(spacing)) + Number(spacing) * 20;
+    return [tickLower, tickUpper];
+}
 
 export default function CreatePositionPage() {
     const [step, setStep] = useState(1);
@@ -84,36 +105,39 @@ export default function CreatePositionPage() {
             .catch(console.error);
     }
 
-    let invest = () => {
-        const initBalance = async () => {
+    const invest = () => {
+        const investFn = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
             let signer = await provider.getSigner();
 
-            const contractABI = [{
-                "inputs": [
-                    {"internalType":"address","name":"otherToken","type":"address"},
-                    {"internalType":"uint24","name":"fee","type":"uint24"},
-                    {"internalType":"uint24","name":"rangePercent100","type":"uint24"}
-                ],
-                "name": "invest",
-                "outputs": [],
-                "stateMutability": "payable",
-                "type": "function",
-            }];
+            let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-            let contract = new Contract(CONTRACT_ADDRESS, contractABI, signer)
-            let amount = parseEther("0.1");
+            let [tick1, tick2] = await computeTicks(null, null, 3000);
 
             // Create the transaction
             const receipt = await contract.invest(
-                USDC, 3000, 1,
+                MATIC.address, USDC.address, 500,
+                parseEther("0.1"),
+                parseUnits("1", 6),
+                tick1, tick2,
                 {
                     value: parseEther("0.01"),
                     gasLimit: 20000000,
                 });
+
+            const tx = await receipt.wait();
+
+            // toast({
+            //     position: 'bottom-left',
+            //     render: () => (
+            //         <Box color='white' p={3} bg='blue.500'>
+            //             <YOUR_LINK_HERE>
+            //         </Box>
+            //     ),
+            // });
         }
 
-        initBalance()
+        investFn()
             .catch(console.error);
     }
 

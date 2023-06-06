@@ -6,12 +6,12 @@ import eth from 'node_modules/cryptocurrency-icons/svg/color/eth.svg';
 import matic from 'node_modules/cryptocurrency-icons/svg/color/matic.svg';
 
 export interface PairTokensIconProps {
-    token1: Token;
-    token2: Token;
+    token1: TokenIcon;
+    token2: TokenIcon;
     showLabel?: boolean;
 }
 
-export enum Token {
+export enum TokenIcon {
     USDC,
     USDT,
     ETH,
@@ -19,17 +19,17 @@ export enum Token {
 }
 
 export const TokenIconsMap = {
-    [Token.USDC]: usdc.src,
-    [Token.USDT]: usdt.src,
-    [Token.ETH]: eth.src,
-    [Token.MATIC]: matic.src,
+    [TokenIcon.USDC]: usdc.src,
+    [TokenIcon.USDT]: usdt.src,
+    [TokenIcon.ETH]: eth.src,
+    [TokenIcon.MATIC]: matic.src,
 }
 
 export default function PairTokensIcon(props: PairTokensIconProps) {
     return (
         <Flex className={styles.logo}>
             <div className={styles.icon} style={{backgroundImage: `url(${TokenIconsMap[props.token1]})`}}></div>
-            <div className={styles.icon} style={{backgroundImage: `url(${TokenIconsMap[props.token2]}})`}}></div>
+            <div className={styles.icon} style={{backgroundImage: `url(${TokenIconsMap[props.token2]})`}}></div>
             {/*<div>ETH - USDC</div>*/}
         </Flex>
     );
