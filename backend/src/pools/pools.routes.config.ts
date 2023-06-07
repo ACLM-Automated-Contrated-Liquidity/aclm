@@ -52,8 +52,12 @@ export class PoolsRoutes extends CommonRoutesConfig {
 }
 
 function getPools(): Pool {
-    const content = fs.readFileSync("test/pool_usdc-eth.json", "utf-8")
-    const pool: Pool = JSON.parse(content)
-    debugLog(`Got pool: ${pool}`)
-    return pool
+    try {
+        const content = fs.readFileSync("resources/pool_usdc-eth.json", "utf-8")
+        const pool: Pool = JSON.parse(content)
+        debugLog(`Got pool: ${pool}`)
+        return pool
+    } catch (err) {
+        return Object.create({})
+    }
 }

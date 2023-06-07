@@ -7,8 +7,8 @@ async function computeTicks(poolAddr: string): Promise<[number, number]> {
     const pool = await ethers.getContractAt("IUniswapV3Pool", poolAddr)
     const slot = await pool.slot0()
     const spacing = await pool.tickSpacing()
-    const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 1
-    const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 1
+    const tickLower = nearestUsableTick(slot.tick, spacing) - spacing * 5
+    const tickUpper = nearestUsableTick(slot.tick, spacing) + spacing * 5
     return [tickLower, tickUpper]
 }
 
