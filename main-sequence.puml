@@ -1,0 +1,39 @@
+@startuml Main Sequence
+
+actor User
+participant Frontend as F #LightPink
+participant Backend as B
+participant "Smart Contract" as SC #DarkGray
+participant "Chainlink Automation" as CA #SkyBlue
+
+User -> F: Choose Network and Pool
+F -> B: fetch yield estimation
+F <-- B
+User <-- F
+CA -> CA: checkUpkeep
+User -> F: Chose target price range
+User <-- F: re-estimate
+CA -> CA: checkUpkeep
+User -> F: Connect Wallet
+User <-- F
+User -> F: Press "Invest"
+F -> F: Calculate ticks and amounts
+F -> SC: call "invest" method with params
+SC -> SC: Deposit money on contract
+CA -> CA: checkUpkeep
+SC -> SC: Swap to target amounts
+SC -> SC: Mint new position on Pool
+F <-- SC: return back TX
+User <-- F: show TX to the user
+=== Price moved out of range... ==
+CA -> CA: checkUpkeep
+alt upkeep needed
+    SC <-- CA: performUpkeep
+    SC -> SC: remove out of range position
+    SC -> SC: rebalance tokens
+    SC -> SC: mint new position
+    note left: different position strategies may apply
+end
+
+
+@enduml

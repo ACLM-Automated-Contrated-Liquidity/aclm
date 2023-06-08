@@ -109,7 +109,7 @@ export const getPriceFromTick = (
     token0Decimal: number,
     token1Decimal: number
 ): number => {
-    const sqrtPrice = new bn(Math.pow(Math.sqrt(1.0001), tick)).multipliedBy(new bn(2).pow(96))
+    const sqrtPrice = new bn(Math.pow(Math.sqrt(1.0001), tick).toString()).times(new bn(2).pow(96))
     const token0 = expandDecimals(1, token0Decimal)
     const token1 = expandDecimals(1, token1Decimal)
     const L2 = mulDiv(encodeSqrtPriceX96(token0), encodeSqrtPriceX96(token1), Q96)
@@ -192,10 +192,10 @@ const getLiquidityForAmount1 = (sqrtRatioAX96: bn, sqrtRatioBX96: bn, amount1: b
 }
 
 const getSqrtPriceX96 = (price: number, token0Decimal: number, token1Decimal: number): bn => {
-    const token0 = expandDecimals(price, token0Decimal)
+    const token0 = expandDecimals(price.toString(), token0Decimal)
     const token1 = expandDecimals(1, token1Decimal)
 
-    return token0.div(token1).sqrt().multipliedBy(Q96)
+    return token0.div(token1).sqrt().times(Q96)
 }
 
 export const getLiquidityDelta = (
@@ -260,13 +260,13 @@ export const getLiquidityFromTick = (poolTicks: Tick[], tick: number): bn => {
 
 // private helper functions
 const encodeSqrtPriceX96 = (price: number | string | bn): bn => {
-    return new bn(price).sqrt().multipliedBy(Q96).integerValue(3)
+    return new bn(price).sqrt().times(Q96)
 }
 
 const expandDecimals = (n: number | string | bn, exp: number): bn => {
-    return new bn(n).multipliedBy(new bn(10).pow(exp))
+    return new bn(n).times(new bn(10).pow(exp))
 }
 
 const mulDiv = (a: bn, b: bn, multiplier: bn) => {
-    return a.multipliedBy(b).div(multiplier)
+    return a.times(b).div(multiplier)
 }
