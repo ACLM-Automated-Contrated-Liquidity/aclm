@@ -16,7 +16,7 @@ import {
     useToast
 } from '@chakra-ui/react';
 import styles from './create-position.module.scss';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {PriceChart} from '../../components/PriceChart';
 import {LiquidityDistribution} from '../../components/LiquidityDistribution';
 import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
@@ -25,6 +25,10 @@ import {CONTRACT_ABI, MATIC, USDC} from '../../interfaces/contract';
 import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import {Token} from '@uniswap/sdk-core';
+import {Utils} from '../../services/utils.service';
+import {PriceEndpoints} from '../../endpoints/price.endpoints';
+import {useRouter} from 'next/router';
+import queryString from "query-string";
 
 const rawData = [
     {label: 'Mon', aValue: 40, bValue: 62},
@@ -35,6 +39,42 @@ const rawData = [
 ];
 const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
 const UNISWAP_FACTORY = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
+
+const invest = () => {
+    const investFn = async () => {
+        let provider = new BrowserProvider((window as any).ethereum);
+        let signer = await provider.getSigner();
+
+        let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+        let [tick1, tick2] = await computeTicks(null, null, 3000);
+
+        // Create the transaction
+        const receipt = await contract.invest(
+            MATIC.address, USDC.address, 500,
+            parseEther("0.1"),
+            parseUnits("1", 6),
+            tick1, tick2,
+            {
+                value: parseEther("0.01"),
+                gasLimit: 20000000,
+            });
+
+        const tx = await receipt.wait();
+
+        // toast({
+        //     position: 'bottom-left',
+        //     render: () => (
+        //         <Box color='white' p={3} bg='blue.500'>
+        //             <YOUR_LINK_HERE>
+        //         </Box>
+        //     ),
+        // });
+    }
+
+    investFn()
+        .catch(console.error);
+}
 
 async function computeTicks(addr1: string, addr2: string, fee: number) {
     const provider = new BrowserProvider((window as any).ethereum);
@@ -54,9 +94,17 @@ async function computeTicks(addr1: string, addr2: string, fee: number) {
 }
 
 export default function CreatePositionPage() {
+    const router = useRouter();
     const [step, setStep] = useState(1);
     const [lowerBound, setLowerBound] = useState(1850);
     const [upperBound, setUpperBound] = useState(1950);
+    const [token1, setToken1] = useState(0.5);
+    const [token2, setToken2] = useState(0.5);
+    const [minDisplayedPrice, setMinDisplayedPrice] = useState(0);
+    const [maxDisplayedPrice, setMaxDisplayedPrice] = useState(0);
+    const [tokenName, setTokenName] = useState('');
+    const [investedSum, setInvestedSum] = useState(100);
+    const [currentPrice, setCurrentPrice] = useState(1000);
     const toast = useToast();
 
     let data = [];
@@ -68,83 +116,44 @@ export default function CreatePositionPage() {
     let onRangeChanged = ([lBound, uBound]: [number, number]) => {
         setLowerBound(lBound);
         setUpperBound(uBound);
+        updateTokensCount(investedSum);
     };
 
-    let deposit = () => {
-        const initBalance = async () => {
-            let provider = new BrowserProvider((window as any).ethereum);
-            let signer = await provider.getSigner();
+    let updateTokensCount = (newSum: number) => {
+        const [t1, t2] = Utils.getTokensCount(newSum, currentPrice, lowerBound, upperBound);
+        setToken1(t1 / currentPrice);
+        setToken2(t2);
+    }
 
-            const contractABI = [{
-                stateMutability: 'payable',
-                type: 'function',
-                name: 'deposit',
-                inputs: [],
-                outputs: [],
-            }];
-            let contract = new Contract(CONTRACT_ADDRESS, contractABI, signer)
-            let amount = parseEther("0.01");
+    useEffect(() => {
+        let minValue = 0;
+        let maxValue = 0;
 
-            // Create the transaction
-            const receipt = await contract.deposit({ value: amount });
+        router.query = queryString.parse(router.asPath.split(/\?/)[1])
+        setTokenName(router.query.t1);
 
-            const subscribtion = receipt.wait();
+        PriceEndpoints.getPrice(router.query.t1)
+            .subscribe(pricePoints => {
+                if (!pricePoints.length) return;
 
-            subscribtion.then(() => {
-                toast({
-                    title: 'Success',
-                    description: "You succesfuly deposited money.",
-                    status: 'success',
-                    duration: 9000,
-                    isClosable: true,
-                })
+                let curPrice = (pricePoints[pricePoints.length - 1])?.y;
+                setCurrentPrice(curPrice);
+                setMinDisplayedPrice(curPrice * 0.5);
+                setMaxDisplayedPrice(curPrice * 2);
+                setLowerBound(curPrice * 0.6);
+                setUpperBound(curPrice * 1.2);
             });
-        }
+    }, []);
 
-        initBalance()
-            .catch(console.error);
-    }
-
-    const invest = () => {
-        const investFn = async () => {
-            let provider = new BrowserProvider((window as any).ethereum);
-            let signer = await provider.getSigner();
-
-            let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-            let [tick1, tick2] = await computeTicks(null, null, 3000);
-
-            // Create the transaction
-            const receipt = await contract.invest(
-                MATIC.address, USDC.address, 500,
-                parseEther("0.1"),
-                parseUnits("1", 6),
-                tick1, tick2,
-                {
-                    value: parseEther("0.01"),
-                    gasLimit: 20000000,
-                });
-
-            const tx = await receipt.wait();
-
-            // toast({
-            //     position: 'bottom-left',
-            //     render: () => (
-            //         <Box color='white' p={3} bg='blue.500'>
-            //             <YOUR_LINK_HERE>
-            //         </Box>
-            //     ),
-            // });
-        }
-
-        investFn()
-            .catch(console.error);
-    }
+    const onInvestedSumChanged = (investedSum: number) => {
+        setInvestedSum(investedSum);
+        updateTokensCount(investedSum);
+    };
 
     return (
         <RightSidePanelLayout>
             <div>
-                <a href='/'>
+                <a href='/app'>
                     <Flex className={styles.backButton} align='center'>
                         <BsArrowLeft />
                         <Text>Back to Pools</Text>
@@ -154,7 +163,7 @@ export default function CreatePositionPage() {
                 <Card>
                     <CardHeader>
                         <Flex justifyContent='space-between'>
-                            <Heading>Create position</Heading>
+                            <Heading>Create position: {String(tokenName)}-USDC</Heading>
                             <FormControl display='flex' width='auto'>
                                 <FormLabel htmlFor='email-alerts' mb='0'>
                                     Enable advanced mode
@@ -166,18 +175,19 @@ export default function CreatePositionPage() {
 
                     <CardBody>
                         <Box marginLeft='32px'>
-                            <PriceChart lowerBound={lowerBound} upperBound={upperBound}></PriceChart>
+                            <PriceChart token={tokenName} lowerBound={lowerBound} upperBound={upperBound}></PriceChart>
                         </Box>
 
                         <Box className={styles.sliderWrap}>
                             <FormControl>
                                 <FormLabel>Select range</FormLabel>
                                 <HStack spacing={3}>
-                                    <Input defaultValue={lowerBound} readOnly width='80px'></Input>
+                                    <Input value={lowerBound} readOnly width='80px'></Input>
                                     <RangeSlider
-                                        min={1700}
-                                        max={2200}
-                                        defaultValue={[1850, 1900]}
+                                        min={minDisplayedPrice}
+                                        max={maxDisplayedPrice}
+                                        step={(maxDisplayedPrice - minDisplayedPrice) / 1000}
+                                        value={[lowerBound, upperBound]}
                                         onChange={range => onRangeChanged(range as [number, number])}
                                     >
                                         <RangeSliderMark
@@ -195,10 +205,18 @@ export default function CreatePositionPage() {
                                         <RangeSliderThumb index={0} />
                                         <RangeSliderThumb index={1} />
                                     </RangeSlider>
-                                    <Input defaultValue={upperBound} readOnly width='80px'></Input>
+                                    <Input value={upperBound} readOnly width='80px'></Input>
                                 </HStack>
                             </FormControl>
                         </Box>
+
+                        <FormControl marginTop='16px'>
+                            <FormLabel>Invest (USDC)</FormLabel>
+                            <Input
+                                value={investedSum}
+                                onChange={(event) => onInvestedSumChanged(Number(event.target.value))}
+                            ></Input>
+                        </FormControl>
                     </CardBody>
 
                     <CardFooter justifyContent='end'>
@@ -215,7 +233,13 @@ export default function CreatePositionPage() {
                     </CardHeader>
                     <CardBody>
                         <Stack spacing={3}>
-                            <LiquidityDistribution lowerBound={lowerBound} upperBound={upperBound}></LiquidityDistribution>
+                            <LiquidityDistribution
+                                lowerBound={lowerBound}
+                                upperBound={upperBound}
+                                minPrice={minDisplayedPrice}
+                                maxPrice={maxDisplayedPrice}
+                                currentPrice={currentPrice}
+                            ></LiquidityDistribution>
 
                             <HStack spacing={3}>
                                 <FormControl>
@@ -231,11 +255,11 @@ export default function CreatePositionPage() {
                             <HStack spacing={3}>
                                 <FormControl>
                                     <FormLabel>Eth</FormLabel>
-                                    <Input value="0.001" readOnly></Input>
+                                    <Input value={token1} readOnly></Input>
                                 </FormControl>
                                 <FormControl>
                                     <FormLabel>USDC</FormLabel>
-                                    <Input value="1000" readOnly></Input>
+                                    <Input value={token2} readOnly></Input>
                                 </FormControl>
                             </HStack>
 

@@ -1,6 +1,7 @@
-import {from, Observable, timestamp} from 'rxjs';
+import {from, Observable, of, timestamp} from 'rxjs';
 import {map} from 'rxjs/operators';
 import tokenAddressMapping from "../../backend/src/common/tokenAddressMapping.json"
+import {Network} from '../interfaces/contract';
 
 const ETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 const ETHEREUM = 'ethereum';
@@ -20,22 +21,34 @@ enum QueryPeriodEnum {
     MAX = "max",
 }
 
+export const TokenAddressMap = {
+    'MATIC': 'matic-network',
+    'ETH': 'weth',
+}
+
 export class PriceEndpoints {
-    static getPrice(): any {
-        return from(PriceEndpoints.getPriceChart())
+    static getPrice(
+        tokenName: string,
+        queryPeriod: QueryPeriodEnum = QueryPeriodEnum.THREE_MONTH
+    ): any {
+        if (!tokenName) {
+            return of([]);
+        }
+
+        return from(PriceEndpoints.getPriceChart(tokenName, queryPeriod))
             .pipe(map(data => data.prices.map(item => {
                 return {x: item[0], y: item[1]};
             })));
     }
 
     static async getPriceChart(
-        contractAddress?: string,
+        tokenName?: string,
         queryPeriod: QueryPeriodEnum = QueryPeriodEnum.THREE_MONTH,
     ): Promise<any | null> {
-        let token = tokenAddressMapping[ETHEREUM][ETH_ADDRESS];
+        let tokenId = TokenAddressMap[tokenName];
 
         let response = await fetch(
-            `https://api.coingecko.com/api/v3/coins/${token.id}/market_chart?vs_currency=usd&days=${queryPeriod}`,
+            `https://api.coingecko.com/api/v3/coins/${tokenId}/market_chart?vs_currency=usd&days=${queryPeriod}`,
             {
                 mode: 'cors',
                 headers: {

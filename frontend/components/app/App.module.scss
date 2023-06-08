@@ -20,8 +20,8 @@ $border-radius: 16px;
   justify-content: center;
   width: 72px;
   height: 72px;
-  background: #ffa2c0;
-  background: #9bc4ff;
+  //background: #9bc4ff;
+  background: linear-gradient(131deg, #3769c4, #a78ed8);
   border-radius: 8px;
 
   div:nth-child(2) {
@@ -67,7 +67,8 @@ $border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(145deg, #5e34af, #8355ca);
+  //background: linear-gradient(145deg, #5e34af, #8355ca);
+  background: linear-gradient(145deg, #26155b, #26155b);
   border-radius: $border-radius;
   width: 100%;
   height: 200px;
@@ -94,9 +95,12 @@ $border-radius: 16px;
 }
 
 .image {
-  width: 400px;
-  height: 200px;
-  background-image: url("../../public/ball.png");
+  position: absolute;
+  top: -128px;
+  right: 32px;
+  width: 300px;
+  height: 300px;
+  background-image: url("../../public/alchemical_laboratory-transparent.png");
   background-size: cover;
 }
 
@@ -106,4 +110,15 @@ $border-radius: 16px;
   width: 100px;
   color: black;
   border-radius: 10px;
+}
+
+.pool {
+  width: 30%;
+  height: 200px;
+  cursor: pointer;
+  transition: transform 200ms;
+
+  &:hover {
+    transform: scale(1.04);
+  }
 }

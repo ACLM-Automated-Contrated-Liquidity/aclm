@@ -8,27 +8,38 @@ import moment from "moment";
 interface PriceChartProps {
     lowerBound: number;
     upperBound: number;
+    token?: string;
 }
 interface PriceChartState {
+    token?: string;
     data?: Series;
     line1?: Series;
     line2?: Series;
+    xDomain?: number;
+    curPriceLine?: Series;
 }
 
 export class PriceChart extends Component<PriceChartProps, PriceChartState> {
 
     constructor(props) {
         super(props);
-        this.state = {data: [], line1: [], line2: []};
+        this.state = {data: [], line1: [], line2: [], curPriceLine: []};
     }
 
-    componentDidMount() {
-        PriceEndpoints.getPrice().subscribe(price => {
-            this.setState({data: price.map((v, i) => ({x: i, y: v.y}))});
-        });
-    }
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.token !== this.state.token) {
+            this.setState({token: nextProps.token});
 
-    componentWillReceiveProps() {
+            PriceEndpoints.getPrice(nextProps.token).subscribe(price => {
+                let curPrice = price[price.length - 1]?.y;
+                this.setState({
+                    xDomain: price.length,
+                    data: price.map((v, i) => ({x: i, y: v.y})),
+                    curPriceLine: [{x: 0, y: curPrice}, {x: 10000, y: curPrice}],
+                });
+            });
+        }
+
         this.setState({
            line1: [{x: 0, y: this.props.lowerBound}, {x: 10000, y: this.props.lowerBound}],
            line2: [{x: 0, y: this.props.upperBound}, {x: 10000, y: this.props.upperBound}],
@@ -41,7 +52,7 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
                 width={840}
                 height={250}
                 xTime='time'
-                xDomain={[0, 2000]}
+                xDomain={[0, this.state.xDomain]}
                 className={styles.chart}
             >
                 <XAxis
@@ -52,6 +63,7 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
                 <LineSeries data={this.state.data}/>
                 <LineSeries data={this.state.line1} color="#453899"></LineSeries>
                 <LineSeries data={this.state.line2} color="#453899"></LineSeries>
+                <LineSeries data={this.state.curPriceLine} color="red" strokeStyle="dashed"></LineSeries>
             </XYPlot>
         );
     }

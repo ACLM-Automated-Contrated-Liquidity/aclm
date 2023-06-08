@@ -1,23 +1,37 @@
-import styles from "./App.module.scss";
-import PanelComponent from '../PanelComponent';
-import usdc from "node_modules/cryptocurrency-icons/svg/color/usdc.svg";
-import eth from "node_modules/cryptocurrency-icons/svg/color/eth.svg";
-import {Box, Flex, useBoolean, useDisclosure} from '@chakra-ui/react';
-import {useEffect, useState} from 'react';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {faXmarkCircle} from '@fortawesome/free-regular-svg-icons';
-import CreatePositionWindow from '../dashboard/CreatePositionWindow/CreatePositionWindow';
+import styles from './App.module.scss';
+import {
+    Box,
+    Card,
+    CardHeader,
+    Flex, Stat, StatArrow,
+    StatHelpText,
+    StatLabel,
+    StatNumber,
+    useBoolean,
+    useDisclosure,
+    Wrap
+} from '@chakra-ui/react';
+import React, {useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
 import PairTokensIcon, {TokenIcon} from '../pair-tokens-icon/PairTokensIcon';
 import {BrowserProvider, formatEther} from 'ethers';
 import CenteredLayout from '../../layout/centeredLayout';
+import WelcomeWindowComponent from './welcome-window/WelcomeWindowComponent';
 
 export default function AppComponent() {
     const [showBanner, setShowBanner] = useBoolean(true);
     const [showWindow, setShowWindow] = useState(false);
-    const {isOpen, onOpen} = useDisclosure();
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const [balance, setBalance] = useState('');
     const router = useRouter();
+
+    const pools = [
+        {token1: 'ETH', token2: 'USDC'},
+        {token1: 'MATIC', token2: 'USDC'},
+        {token1: 'ETH', token2: 'BTC'},
+        {token1: 'FLOW', token2: 'USDC'},
+        {token1: 'FLOW', token2: 'BTC'}
+    ];
 
     useEffect(function onFirstMount() {
         const initBalance = async () => {
@@ -41,53 +55,60 @@ export default function AppComponent() {
                         <h1>Your balance is: {balance?.toString()}</h1>
                     </Flex>
                 </Flex>
-                {!showBanner &&
+                {showBanner &&
                     <Box className={styles.banner} marginBottom='24px'>
-                        <FontAwesomeIcon
-                            className={styles.closeIcon}
-                            icon={faXmarkCircle}
-                            onClick={setShowBanner?.toggle}
-                        />
-
                         <Flex direction='column' justifyContent='center'>
-                            <h1>Dashboard</h1>
-                            <div>Unleash the power of concentrated liquidity</div>
-                            <button className={styles.button}>Get started</button>
+                            <h1>Pools Laboratory</h1>
+                            <div>Create you spellbound pool</div>
+                            <button className={styles.button} onClick={onOpen}>Get started</button>
                         </Flex>
                         <div className={styles.image}></div>
                     </Box>
                 }
 
-                <PanelComponent className={styles.container}>
-                    <b style={{display: 'block', padding: '16px'}}>Available pools</b>
-                    <Flex className={styles.row}>
-                        <div>Pool</div>
-                        <div>Liquidity</div>
-                        <div>Volume</div>
-                        <div>Fee 24H</div>
-                        <div>APR 24H</div>
-                    </Flex>
+                <b>Available pools:</b>
+                <Wrap spacing='32px' marginTop='8px' overflow='visible'>
+                    {pools.map((pool, i) => {
+                            return (
+                                <Card
+                                    key={i}
+                                    className={styles.pool}
+                                    onClick={() => router.push({pathname: '/create-position', query: {t1: pool.token1}})}
+                                >
+                                    <CardHeader>
+                                        <Flex alignItems='center' justifyContent='space-between'>
+                                            <Flex alignItems='center'>
+                                                <PairTokensIcon token1={TokenIcon[pool.token1]} token2={TokenIcon[pool.token2]}></PairTokensIcon>
+                                                <b style={{marginLeft: '16px'}}>{pool.token1}-{pool.token2}</b>
+                                            </Flex>
 
-                    {[...Array(5)].map((x, i) =>
-                        <Flex key={i} className={styles.row} onClick={() => router.push('/create-position')}>
-                            <Flex>
-                                <PairTokensIcon token1={TokenIcon.ETH} token2={TokenIcon.USDC}></PairTokensIcon>
-                                <Flex direction='column' justifyContent='center' marginLeft='16px'>
-                                    <b>ETH-USDC-LP</b>
-                                    <div>Fee 0.05%</div>
-                                </Flex>
-                            </Flex>
+                                            <Stat display='flex' justifyContent='center' marginLeft='58px'>
+                                                <StatLabel>APY</StatLabel>
+                                                <StatNumber>45</StatNumber>
+                                                <StatHelpText>
+                                                    <StatArrow type='increase' />
+                                                    9.05%
+                                                </StatHelpText>
+                                            </Stat>
+                                        </Flex>
 
-                            <div>1.257.628$</div>
-                            <div>4.257.628$</div>
-                            <div>16.5$</div>
-                            <Flex flex={1} justifyContent='flex-end'>54%</Flex>
-                        </Flex>
-                    )}
-                </PanelComponent>
-
-                <CreatePositionWindow isOpen={showWindow}></CreatePositionWindow>
+                                        <Flex marginTop='16px' justifyContent='space-between' flexDirection='column'>
+                                            <Flex justifyContent='space-between'>
+                                                <b>Volume:</b>
+                                                <div>$4.257.628</div>
+                                            </Flex>
+                                            <Flex justifyContent='space-between'>
+                                                <b>Liquidity:</b>
+                                                <div>$1.257.628</div>
+                                            </Flex>
+                                        </Flex>
+                                    </CardHeader>
+                                </Card>
+                            )
+                    })}
+                </Wrap>
             </Box>
+            <WelcomeWindowComponent isOpen={isOpen} onOpen={onOpen} onClose={onClose}></WelcomeWindowComponent>
         </CenteredLayout>
     );
 }

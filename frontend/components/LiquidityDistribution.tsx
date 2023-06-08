@@ -4,12 +4,18 @@ import {LineSeries, VerticalBarSeries, XAxis, XYPlot} from 'react-vis';
 import {Series} from '../interfaces';
 
 interface LiquidityDistributionProps {
-    lowerBound: number;
-    upperBound: number;
+    minPrice?: number;
+    maxPrice?: number;
+    lowerBound?: number;
+    upperBound?: number;
+    currentPrice?: number;
 }
 interface LiquidityDistributionState {
     line1?: Series;
     line2?: Series;
+    minPrice?: number;
+    maxPrice?: number;
+    curPriceLine?: Series;
 }
 
 const liquidity = [
@@ -50,20 +56,37 @@ export class LiquidityDistribution extends Component<LiquidityDistributionProps,
         this.state = {line1: [], line2: []};
     }
 
-    componentWillReceiveProps() {
+    componentWillReceiveProps(newProps) {
+        if (newProps.minPrice !== this.state.minPrice && newProps.maxPrice !== this.state.maxPrice) {
+            liquidity.map((entry, i) => {
+                entry.x = newProps.minPrice + i * (newProps.maxPrice - newProps.minPrice) / 28;
+            });
+            this.setState({
+                minPrice: newProps.minPrice,
+                maxPrice: newProps.maxPrice,
+            });
+        }
+
         this.setState({
-            line1: [{x: this.props.lowerBound, y: 0}, {x: this.props.lowerBound + 1, y: 30}],
-            line2: [{x: this.props.upperBound, y: 0}, {x: this.props.upperBound + 1, y: 30}],
+            line1: [{x: this.props.lowerBound, y: 0}, {x: this.props.lowerBound * 1.00001, y: 30}],
+            line2: [{x: this.props.upperBound, y: 0}, {x: this.props.upperBound * 1.00001, y: 30}],
+            currentPrice: [{x: this.props.currentPrice, y: 0}, {x: this.props.currentPrice * 1.00001, y: 30}],
         });
     }
 
     render() {
         return (
-            <XYPlot width={280} height={160} className={styles.chart}>
+            <XYPlot
+                width={280}
+                height={160}
+                className={styles.chart}
+                xDomain={[this.state.minPrice, this.state.maxPrice]}
+            >
                 <XAxis />
                 <VerticalBarSeries barWidth={1} data={liquidity}/>
                 <LineSeries data={this.state.line1}></LineSeries>
                 <LineSeries data={this.state.line2}></LineSeries>
+                <LineSeries data={this.state.curPriceLine} color="red" strokeStyle="dashed"></LineSeries>
             </XYPlot>
         );
     }

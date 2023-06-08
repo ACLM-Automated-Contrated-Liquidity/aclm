@@ -15,13 +15,12 @@ import {
 	polygonZkEvm,
 	polygonZkEvmTestnet,
 } from "wagmi/chains";
-import {ChakraProvider, extendTheme} from '@chakra-ui/react'
+import {ChakraProvider} from '@chakra-ui/react'
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/router";
-import { useLocation } from 'react-router-dom'
-import CenteredLayout from "../layout/centeredLayout";
+import Head from "next/head";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
 	[
@@ -68,6 +67,9 @@ function MyApp({ Component, pageProps }) {
 					chains={chains}
 				>
 					<ChakraProvider>
+						<Head>
+							<link rel="shortcut icon" href="../public/favicon.ico"/>
+						</Head>
 						<Component {...pageProps} />
 					</ChakraProvider>
 				</RainbowKitProvider>
