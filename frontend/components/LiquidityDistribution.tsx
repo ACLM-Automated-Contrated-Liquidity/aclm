@@ -59,7 +59,7 @@ export class LiquidityDistribution extends Component<LiquidityDistributionProps,
     componentWillReceiveProps(newProps) {
         if (newProps.minPrice !== this.state.minPrice && newProps.maxPrice !== this.state.maxPrice) {
             liquidity.map((entry, i) => {
-                entry.x = newProps.minPrice + i * (newProps.maxPrice - newProps.minPrice) / 28;
+                entry.x = newProps.minPrice + i * (newProps.maxPrice - newProps.minPrice) / 36;
             });
             this.setState({
                 minPrice: newProps.minPrice,
@@ -70,7 +70,7 @@ export class LiquidityDistribution extends Component<LiquidityDistributionProps,
         this.setState({
             line1: [{x: this.props.lowerBound, y: 0}, {x: this.props.lowerBound * 1.00001, y: 30}],
             line2: [{x: this.props.upperBound, y: 0}, {x: this.props.upperBound * 1.00001, y: 30}],
-            currentPrice: [{x: this.props.currentPrice, y: 0}, {x: this.props.currentPrice * 1.00001, y: 30}],
+            curPriceLine: [{x: this.props.currentPrice, y: 0}, {x: this.props.currentPrice * 1.00001, y: 30}],
         });
     }
 

@@ -55,7 +55,7 @@ export default function WelcomeWindowComponent(props) {
                     <Box position='relative' marginRight='18%' width='50%'>
                         <Stepper size='sm' index={activeStep} gap='0'>
                             {steps.map((step, index) => (
-                                <Step key={index} gap='0'>
+                                <Step key={index}>
                                     <StepIndicator bg='white'>
                                         <StepStatus complete={<StepIcon />} />
                                     </StepIndicator>

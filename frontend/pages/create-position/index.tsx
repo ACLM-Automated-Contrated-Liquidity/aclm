@@ -130,9 +130,9 @@ export default function CreatePositionPage() {
         let maxValue = 0;
 
         router.query = queryString.parse(router.asPath.split(/\?/)[1])
-        setTokenName(router.query.t1);
+        setTokenName((router.query as any).t1);
 
-        PriceEndpoints.getPrice(router.query.t1)
+        PriceEndpoints.getPrice((router.query as any).t1)
             .subscribe(pricePoints => {
                 if (!pricePoints.length) return;
 

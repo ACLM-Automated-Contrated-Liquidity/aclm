@@ -50,7 +50,7 @@ export default class TestStrategyPage extends Component<any, StrategyState> {
         this.setState({token1, token2});
         setInterval(() => this.tick(), 100);
 
-        PriceEndpoints.getPrice().subscribe(price => {
+        PriceEndpoints.getPrice('ETH').subscribe(price => {
             this.storage = price;
         });
     }
