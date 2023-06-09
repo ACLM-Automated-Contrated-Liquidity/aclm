@@ -1,5 +1,6 @@
 import express from "express"
 import * as http from "http"
+import serverless from "serverless-http"
 
 import * as winston from "winston"
 import * as expressWinston from "express-winston"
@@ -9,16 +10,16 @@ import { PoolsRoutes } from "./pools/pools.routes.config"
 import debug from "debug"
 import { NETWORKS, setCurrentNetwork } from "./common/networks"
 
-const args: Record<string, string> = {};
-process.argv.forEach(val => {
+const args: Record<string, string> = {}
+process.argv.forEach((val) => {
     if (val.includes("=")) {
-        let [key, value] = val.split("=");
-        key = key.startsWith("--") ? key.slice(2) : key;
-        args[key] = value;
+        let [key, value] = val.split("=")
+        key = key.startsWith("--") ? key.slice(2) : key
+        args[key] = value
     }
-});
+})
 
-console.log(`Script starting with arguments: ${JSON.stringify(args)}`);
+console.log(`Script starting with arguments: ${JSON.stringify(args)}`)
 
 const app: express.Application = express()
 const server: http.Server = http.createServer(app)
@@ -47,7 +48,7 @@ if (!process.env.DEBUG) {
     loggerOptions.meta = false // when not debugging, log requests as one-liners
 }
 
-const network = args.network || NETWORKS.ethereum.id;
+const network = args.network || NETWORKS.ethereum.id
 setCurrentNetwork(network)
 debugLog(`Set network to: ${network}`)
 
@@ -64,11 +65,13 @@ app.get("/", (req: express.Request, res: express.Response) => {
     res.status(200).send(runningMessage)
 })
 
-server.listen(port, () => {
-    routes.forEach((route: CommonRoutesConfig) => {
-        debugLog(`Routes configured for ${route.getName()}`)
-    })
-    // our only exception to avoiding console.log(), because we
-    // always want to know when the server is done starting up
-    console.log(runningMessage)
-})
+export const handler = serverless(app)
+
+// server.listen(port, () => {
+//     routes.forEach((route: CommonRoutesConfig) => {
+//         debugLog(`Routes configured for ${route.getName()}`)
+//     })
+//     // our only exception to avoiding console.log(), because we
+//     // always want to know when the server is done starting up
+//     console.log(runningMessage)
+// })
