@@ -5,12 +5,9 @@ import {useRouter} from 'next/router';
 import PairTokensIcon, {TokenIcon} from '../pair-tokens-icon/PairTokensIcon';
 import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
 import {useEffect, useState} from 'react';
-import {abi as CONTRACT_ABI} from '../../interfaces/mumbai-abi.json';
-import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
-import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
-import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
-import {MUMBAI_CHAIN_ID, USDC, MATIC, PositionInfo, TokenMap} from '../../interfaces/contract';
-import {Token} from '@uniswap/sdk-core';
+import {MUMBAI_CONTRACT as CONTRACT_ABI} from '../../interfaces/mumbai-abi';
+import {BrowserProvider, Contract} from 'ethers';
+import {PositionInfo, TokenMap} from '../../interfaces/contract';
 
 const CONTRACT_ADDRESS = '0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD';
 

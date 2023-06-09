@@ -31,10 +31,6 @@ import {
     StatHelpText,
     StatLabel,
     StatNumber,
-    Step, StepIcon,
-    StepIndicator,
-    Stepper,
-    StepStatus,
     Switch,
     Text,
     useDisclosure,
@@ -47,7 +43,7 @@ import {LiquidityDistribution} from '../../components/LiquidityDistribution';
 import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
 import RightSidePanelLayout from '../../layout/rightSidePanelLayout';
 import {MATIC, NETWORK, USDC} from '../../interfaces/contract';
-import {abi as CONTRACT_ABI} from '../../interfaces/mumbai-abi.json';
+import {MUMBAI_CONTRACT as CONTRACT_ABI} from '../../interfaces/mumbai-abi';
 import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import {Token} from '@uniswap/sdk-core';
@@ -55,7 +51,6 @@ import {Utils} from '../../services/utils.service';
 import {PriceEndpoints} from '../../endpoints/price.endpoints';
 import {useRouter} from 'next/router';
 import queryString from "query-string";
-// import {POOLS_MAP} from '../../components/app/AppComponent';
 
 const rawData = [
     {label: 'Mon', aValue: 40, bValue: 62},

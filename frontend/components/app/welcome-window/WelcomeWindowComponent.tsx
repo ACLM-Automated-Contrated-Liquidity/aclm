@@ -80,7 +80,7 @@ export default function WelcomeWindowComponent(props) {
                                 </p>
                             </Flex>
                             <Flex flex={1} alignItems={'center'} justifyContent={'center'}>
-                                <Box className={styles.image}></Box>
+                                <Box className={styles.image3}></Box>
                             </Flex>
                         </Flex>
                     }

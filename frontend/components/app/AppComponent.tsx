@@ -23,7 +23,7 @@ import {MATIC, NETWORK, USDC} from '../../interfaces/contract';
 import {Utils} from '../../services/utils.service';
 import {Token} from '@uniswap/sdk-core';
 import {FeeAmount} from '@uniswap/v3-sdk';
-import {abi as GEORLI_ABI} from '../../interfaces/georli-abi.json';
+import {GOERLI_ABI} from '../../interfaces/georli-abi';
 
 const GOERLI_CONTRACT = '0x7b5351e66A978ecb72669d2aDF932F53ce664EF0';
 export const POOLS_MAP = {
@@ -83,7 +83,7 @@ export default function AppComponent() {
             let provider = new BrowserProvider((window as any).ethereum);
             let signer = await provider.getSigner();
 
-            let contract = new EthersContract(GOERLI_CONTRACT, GEORLI_ABI, signer);
+            let contract = new EthersContract(GOERLI_CONTRACT, GOERLI_ABI, signer);
 
             const GOERLI_CHAIN_ID = 5;
             const GOERLI_WETH = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
