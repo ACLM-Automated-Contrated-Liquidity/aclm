@@ -34,7 +34,7 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
             PriceEndpoints.getPrice(nextProps.token).subscribe(price => {
                 let curPrice = price[price.length - 1]?.y;
                 this.setState({
-                    xDomain: [minBy(price, 'x').x, maxBy(price, 'x').x],
+                    xDomain: [(minBy(price, 'x') as any).x, (maxBy(price, 'x') as any).x],
                     data: price.map((v, i) => ({x: v.x, y: v.y})),
                     curPriceLine: [{x: 0, y: curPrice}, {x: Date.now(), y: curPrice}],
                 });

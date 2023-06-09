@@ -6,14 +6,8 @@ import { configureChains, createConfig, useAccount, WagmiConfig } from "wagmi";
 import {
 	mainnet,
 	polygon,
-	optimism,
-	arbitrum,
 	goerli,
 	polygonMumbai,
-	optimismGoerli,
-	arbitrumGoerli,
-	polygonZkEvm,
-	polygonZkEvmTestnet,
 } from "wagmi/chains";
 import {ChakraProvider} from '@chakra-ui/react'
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -24,9 +18,7 @@ import Head from "next/head";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
 	[
-		mainnet,
 		goerli,
-		polygon,
 		polygonMumbai,
 	],
 	[alchemyProvider({ apiKey: process.env.ALCHEMY_API_KEY }), publicProvider()]

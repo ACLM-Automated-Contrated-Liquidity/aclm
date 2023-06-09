@@ -62,7 +62,7 @@ export default function AppComponent() {
             let addr = signer.address;
             let id = `${addr.slice(0, 6)}...${addr.slice(addr.length - 5, addr.length)}`;
             setUser(id);
-            setPools(POOLS_MAP[chainId]);
+            setPools(POOLS_MAP[Number(chainId)]);
         }
 
 
@@ -140,7 +140,7 @@ export default function AppComponent() {
 
                 <b>Available pools:</b>
                 <Wrap spacing='32px' marginTop='8px' overflow='visible'>
-                    {pools.map((pool, i) => {
+                    {pools?.map((pool, i) => {
                             return (
                                 <Card
                                     key={i}
@@ -150,7 +150,7 @@ export default function AppComponent() {
                                     <CardHeader>
                                         <Flex alignItems='center' justifyContent='space-between'>
                                             <Flex alignItems='center'>
-                                                <PairTokensIcon token1={TokenIcon[pool.token1]} token2={TokenIcon[pool.token2]}></PairTokensIcon>
+                                                <PairTokensIcon token1={TokenIcon[pool.token1] as any} token2={TokenIcon[pool.token2] as any}></PairTokensIcon>
                                                 <b style={{marginLeft: '16px'}}>{pool.token1}-{pool.token2}</b>
                                             </Flex>
 
