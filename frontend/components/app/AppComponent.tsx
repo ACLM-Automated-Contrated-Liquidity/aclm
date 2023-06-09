@@ -3,7 +3,9 @@ import {
     Box,
     Card,
     CardHeader,
-    Flex, Stat, StatArrow,
+    Flex,
+    Stat,
+    StatArrow,
     StatHelpText,
     StatLabel,
     StatNumber,
@@ -14,43 +16,113 @@ import {
 import React, {useEffect, useState} from 'react';
 import {useRouter} from 'next/router';
 import PairTokensIcon, {TokenIcon} from '../pair-tokens-icon/PairTokensIcon';
-import {BrowserProvider, formatEther} from 'ethers';
+import {BrowserProvider, Contract as EthersContract, formatEther, parseEther, parseUnits} from 'ethers';
 import CenteredLayout from '../../layout/centeredLayout';
 import WelcomeWindowComponent from './welcome-window/WelcomeWindowComponent';
+import {MATIC, NETWORK, USDC} from '../../interfaces/contract';
+import {Utils} from '../../services/utils.service';
+import {Token} from '@uniswap/sdk-core';
+import {FeeAmount} from '@uniswap/v3-sdk';
+import {abi as GEORLI_ABI} from '../../interfaces/georli-abi.json';
+
+const GOERLI_CONTRACT = '0x7b5351e66A978ecb72669d2aDF932F53ce664EF0';
+export const POOLS_MAP = {
+    [NETWORK.MUMBAI]: [
+        {id: 'eth-usdc', token1: 'ETH', token2: 'USDC'},
+        {id: 'matic-usdc', token1: 'MATIC', token2: 'USDC'},
+        {id: 'eth-btc', token1: 'ETH', token2: 'BTC'},
+        {id: 'flow-usdc', token1: 'FLOW', token2: 'USDC'},
+        {id: 'flow-btc', token1: 'FLOW', token2: 'BTC'}
+    ],
+    [NETWORK.GOERLI]: [
+        {id: 'weth-usdc', token1: 'WETH', token2: 'USDC'},
+        {id: 'verse-weth', token1: 'VERSE', token2: 'WETH'}
+    ],
+}
 
 export default function AppComponent() {
     const [showBanner, setShowBanner] = useBoolean(true);
     const [showWindow, setShowWindow] = useState(false);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [balance, setBalance] = useState('');
+    const [pools, setPools] = useState([]);
+    const [user, setUser] = useState('');
     const router = useRouter();
 
-    const pools = [
-        {token1: 'ETH', token2: 'USDC'},
-        {token1: 'MATIC', token2: 'USDC'},
-        {token1: 'ETH', token2: 'BTC'},
-        {token1: 'FLOW', token2: 'USDC'},
-        {token1: 'FLOW', token2: 'BTC'}
-    ];
-
     useEffect(function onFirstMount() {
-        const initBalance = async () => {
+        let wallet = (window as any).ethereum;
+        wallet.on('chainChanged', (chainId: string) => {
+            setPools(POOLS_MAP[parseInt(chainId, 16)]);
+        });
+
+        const init = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
+            let signer = await provider.getSigner();
+            const {chainId} = await provider.getNetwork();
+            let addr = signer.address;
+            let id = `${addr.slice(0, 6)}...${addr.slice(addr.length - 5, addr.length)}`;
+            setUser(id);
+            setPools(POOLS_MAP[chainId]);
+        }
+
+
+        const initBalance = async () => {
+            let provider = new BrowserProvider(wallet);
             let balance = await provider.getBalance("0x56AcC95b7Cbd8fe267EF6ec9DA565D2A8708E809")
 
             setBalance(formatEther(balance));
         }
 
+        init();
         initBalance()
             .catch(console.error);
     }, []);
+
+    const sendToGoerli = () => {
+        let investFn = async () => {
+            let provider = new BrowserProvider((window as any).ethereum);
+            let signer = await provider.getSigner();
+
+            let contract = new EthersContract(GOERLI_CONTRACT, GEORLI_ABI, signer);
+
+            const GOERLI_CHAIN_ID = 5;
+            const GOERLI_WETH = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
+            let GOERLI_USDC = '0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4';
+            let GOERLI_POOL = '0x820288D846848A6128480386513dDf4cA0AfE44c';
+
+            let tokenA = new Token(GOERLI_CHAIN_ID, GOERLI_USDC, 6);
+            let tokenB = new Token(GOERLI_CHAIN_ID, GOERLI_WETH, 18);
+            let [tick1, tick2] = await Utils.computeTicksByTokens(tokenA, tokenB, FeeAmount.LOW);
+
+            // Create the transaction
+            const receipt = await contract.invest([
+                GOERLI_WETH, GOERLI_USDC, FeeAmount.LOW,
+                parseEther("0.0025"),
+                parseUnits("29000", 6),
+                tick1, tick2,
+            ],
+                {
+                    value: parseEther("0.005"),
+                    gasLimit: 10_000_000,
+                });
+
+            // const receipt = await contract.swapKnownInput(GOERLI_WETH, GOERLI_USDC, parseEther("0.0025"), FeeAmount.LOW);
+            // const receipt = await contract.mint(GOERLI_WETH, GOERLI_USDC, parseEther("0.0025"), FeeAmount.LOW);
+
+            const tx = await receipt.wait();
+            let q = 0;
+        }
+
+        investFn()
+            .catch(console.error);
+    }
 
     return (
         <CenteredLayout>
             <Box width="100%">
                 <Flex className={styles.header} alignItems='center' marginBottom='24px'>
                     <Flex direction='column'>
-                        <b>Hi Kirill</b>
+                        <b>Hi {user}</b>
                         <h1>Welcome back &#128075;</h1>
                         <h1>Your balance is: {balance?.toString()}</h1>
                     </Flex>
@@ -73,7 +145,7 @@ export default function AppComponent() {
                                 <Card
                                     key={i}
                                     className={styles.pool}
-                                    onClick={() => router.push({pathname: '/create-position', query: {t1: pool.token1}})}
+                                    onClick={() => router.push({pathname: '/create-position', query: {id: pool.id}})}
                                 >
                                     <CardHeader>
                                         <Flex alignItems='center' justifyContent='space-between'>

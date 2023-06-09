@@ -24,6 +24,7 @@ enum QueryPeriodEnum {
 export const TokenAddressMap = {
     'MATIC': 'matic-network',
     'ETH': 'weth',
+    'VERSE': 'verse-bitcoin',
 }
 
 export class PriceEndpoints {

@@ -1,18 +1,43 @@
 import {BsArrowLeft} from 'react-icons/bs';
 import {
     Box,
-    Button, Card, CardBody, CardFooter, CardHeader, Divider,
+    Button,
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    Divider,
     Flex,
     FormControl,
-    FormLabel, Heading, HStack,
-    Input,
+    FormLabel,
+    Heading,
+    HStack,
+    Input, Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay, Progress,
     RangeSlider,
     RangeSliderFilledTrack,
     RangeSliderMark,
     RangeSliderThumb,
     RangeSliderTrack,
-    Stack, Stat, StatArrow, StatGroup, StatHelpText, StatLabel, StatNumber, Switch,
+    Stack,
+    Stat,
+    StatArrow,
+    StatGroup,
+    StatHelpText,
+    StatLabel,
+    StatNumber,
+    Step, StepIcon,
+    StepIndicator,
+    Stepper,
+    StepStatus,
+    Switch,
     Text,
+    useDisclosure,
     useToast
 } from '@chakra-ui/react';
 import styles from './create-position.module.scss';
@@ -21,7 +46,8 @@ import {PriceChart} from '../../components/PriceChart';
 import {LiquidityDistribution} from '../../components/LiquidityDistribution';
 import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
 import RightSidePanelLayout from '../../layout/rightSidePanelLayout';
-import {CONTRACT_ABI, MATIC, USDC} from '../../interfaces/contract';
+import {MATIC, NETWORK, USDC} from '../../interfaces/contract';
+import {abi as CONTRACT_ABI} from '../../interfaces/mumbai-abi.json';
 import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import {Token} from '@uniswap/sdk-core';
@@ -29,6 +55,7 @@ import {Utils} from '../../services/utils.service';
 import {PriceEndpoints} from '../../endpoints/price.endpoints';
 import {useRouter} from 'next/router';
 import queryString from "query-string";
+// import {POOLS_MAP} from '../../components/app/AppComponent';
 
 const rawData = [
     {label: 'Mon', aValue: 40, bValue: 62},
@@ -37,43 +64,21 @@ const rawData = [
     {label: 'Thu', aValue: 43, bValue: 54},
     {label: 'Fri', aValue: 33, bValue: 58},
 ];
-const CONTRACT_ADDRESS = '0x796304266bc2C7884384Af20f894A5Ab434BaE6b';
+const CONTRACT_ADDRESS = '0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD';
 const UNISWAP_FACTORY = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
 
-const invest = () => {
-    const investFn = async () => {
-        let provider = new BrowserProvider((window as any).ethereum);
-        let signer = await provider.getSigner();
-
-        let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-        let [tick1, tick2] = await computeTicks(null, null, 3000);
-
-        // Create the transaction
-        const receipt = await contract.invest(
-            MATIC.address, USDC.address, 500,
-            parseEther("0.1"),
-            parseUnits("1", 6),
-            tick1, tick2,
-            {
-                value: parseEther("0.01"),
-                gasLimit: 20000000,
-            });
-
-        const tx = await receipt.wait();
-
-        // toast({
-        //     position: 'bottom-left',
-        //     render: () => (
-        //         <Box color='white' p={3} bg='blue.500'>
-        //             <YOUR_LINK_HERE>
-        //         </Box>
-        //     ),
-        // });
-    }
-
-    investFn()
-        .catch(console.error);
+const POOLS_MAP = {
+    [NETWORK.MUMBAI]: [
+        {id: 'eth-usdc', token1: 'ETH', token2: 'USDC'},
+        {id: 'matic-usdc', token1: 'MATIC', token2: 'USDC'},
+        {id: 'eth-btc', token1: 'ETH', token2: 'BTC'},
+        {id: 'flow-usdc', token1: 'FLOW', token2: 'USDC'},
+        {id: 'flow-btc', token1: 'FLOW', token2: 'BTC'}
+    ],
+    [NETWORK.GOERLI]: [
+        {id: 'weth-usdc', token1: 'WETH', token2: 'USDC'},
+        {id: 'verse-weth', token1: 'VERSE', token2: 'WETH'}
+    ],
 }
 
 async function computeTicks(addr1: string, addr2: string, fee: number) {
@@ -102,9 +107,12 @@ export default function CreatePositionPage() {
     const [token2, setToken2] = useState(0.5);
     const [minDisplayedPrice, setMinDisplayedPrice] = useState(0);
     const [maxDisplayedPrice, setMaxDisplayedPrice] = useState(0);
-    const [tokenName, setTokenName] = useState('');
+    const [poolId, setPoolId] = useState(-1);
     const [investedSum, setInvestedSum] = useState(100);
     const [currentPrice, setCurrentPrice] = useState(1000);
+    const [network, setNetwork] = useState(5);
+    const [hash, setHash] = useState('');
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
 
     let data = [];
@@ -126,24 +134,77 @@ export default function CreatePositionPage() {
     }
 
     useEffect(() => {
-        let minValue = 0;
-        let maxValue = 0;
+        const init = async () => {
+            let provider = new BrowserProvider((window as any).ethereum);
+            let {chainId} = await provider.getNetwork();
+            setNetwork(Number(chainId));
 
-        router.query = queryString.parse(router.asPath.split(/\?/)[1])
-        setTokenName((router.query as any).t1);
+            router.query = queryString.parse(router.asPath.split(/\?/)[1]);
+            let polId = (router.query as any).id;
+            setPoolId(polId);
 
-        PriceEndpoints.getPrice((router.query as any).t1)
-            .subscribe(pricePoints => {
-                if (!pricePoints.length) return;
+            PriceEndpoints.getPrice(getPool(polId, Number(chainId)).token1)
+                .subscribe(pricePoints => {
+                    if (!pricePoints.length) return;
 
-                let curPrice = (pricePoints[pricePoints.length - 1])?.y;
-                setCurrentPrice(curPrice);
-                setMinDisplayedPrice(curPrice * 0.5);
-                setMaxDisplayedPrice(curPrice * 2);
-                setLowerBound(curPrice * 0.6);
-                setUpperBound(curPrice * 1.2);
-            });
+                    let curPrice = (pricePoints[pricePoints.length - 1])?.y;
+                    setCurrentPrice(curPrice);
+                    setMinDisplayedPrice(curPrice * 0.5);
+                    setMaxDisplayedPrice(curPrice * 2);
+                    setLowerBound(curPrice * 0.6);
+                    setUpperBound(curPrice * 1.2);
+                });
+        }
+
+        init();
     }, []);
+
+    const getHash = (hash: string) => {
+        return `${hash.slice(0, 6)}...${hash.slice(hash.length - 5, hash.length)}`;
+    }
+
+    const getPool = (id: number = poolId, chainId: number = network) => {
+        return POOLS_MAP[chainId].find(pool => pool.id === id);
+    }
+
+    const invest = () => {
+        const investFn = async () => {
+            let provider = new BrowserProvider((window as any).ethereum);
+            let signer = await provider.getSigner();
+
+            let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+            let [tick1, tick2] = await computeTicks(null, null, 3000);
+
+            // Create the transaction
+            const receipt = await contract.invest([
+                    MATIC.address, USDC.address, 3000,
+                    parseEther("0.05"),
+                    parseUnits("1000", 6),
+                    tick1, tick2,
+                ],
+                {
+                    value: parseEther("0.01"),
+                    gasLimit: 500_000,
+                });
+
+            setHash(receipt.hash);
+            onOpen();
+
+            const tx = await receipt.wait();
+            toast({
+                position: 'bottom-left',
+                render: () => (
+                    <Box color='white' p={3} bg='purple.500'>
+                        <a href={`https://mumbai.polygonscan.com/address/${tx.hash}`}>Transaction completed successfully</a>
+                    </Box>
+                ),
+            });
+        }
+
+        investFn()
+            .catch(console.error);
+    }
 
     const onInvestedSumChanged = (investedSum: number) => {
         setInvestedSum(investedSum);
@@ -163,7 +224,7 @@ export default function CreatePositionPage() {
                 <Card>
                     <CardHeader>
                         <Flex justifyContent='space-between'>
-                            <Heading>Create position: {String(tokenName)}-USDC</Heading>
+                            <Heading>Create position: {getPool()?.token1}-{getPool()?.token2}</Heading>
                             <FormControl display='flex' width='auto'>
                                 <FormLabel htmlFor='email-alerts' mb='0'>
                                     Enable advanced mode
@@ -175,7 +236,7 @@ export default function CreatePositionPage() {
 
                     <CardBody>
                         <Box marginLeft='32px'>
-                            <PriceChart token={tokenName} lowerBound={lowerBound} upperBound={upperBound}></PriceChart>
+                            <PriceChart token={getPool()?.token1} lowerBound={lowerBound} upperBound={upperBound}></PriceChart>
                         </Box>
 
                         <Box className={styles.sliderWrap}>
@@ -254,7 +315,7 @@ export default function CreatePositionPage() {
 
                             <HStack spacing={3}>
                                 <FormControl>
-                                    <FormLabel>Eth</FormLabel>
+                                    <FormLabel>{poolId}</FormLabel>
                                     <Input value={token1} readOnly></Input>
                                 </FormControl>
                                 <FormControl>
@@ -292,6 +353,23 @@ export default function CreatePositionPage() {
                     </CardFooter>
                 </Card>
             </div>
+
+            <Modal isOpen={isOpen}
+                   onClose={onClose}
+                   motionPreset='scale'
+                   isCentered
+            >
+                <ModalOverlay />
+                <ModalContent maxW='280px'>
+                    <ModalHeader>Transaction submited</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody display='flex' alignItems='center' flexDirection='column'>
+                        <Box className={styles.nftImage} marginBottom='16px'></Box>
+                        <b>Link to blockchain scan:</b>
+                        <a className={styles.link} href={`https://mumbai.polygonscan.com/address/${hash}`} target="_blank">{getHash(hash)}</a>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
         </RightSidePanelLayout>
     );
 }

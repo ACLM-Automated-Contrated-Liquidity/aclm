@@ -4,6 +4,7 @@ import {LineSeries, XAxis, XYPlot, YAxis} from 'react-vis';
 import {PriceEndpoints} from '../endpoints/price.endpoints';
 import {Series} from '../interfaces';
 import moment from "moment";
+import {minBy, maxBy} from 'lodash-es';
 
 interface PriceChartProps {
     lowerBound: number;
@@ -15,7 +16,7 @@ interface PriceChartState {
     data?: Series;
     line1?: Series;
     line2?: Series;
-    xDomain?: number;
+    xDomain?: [number, number];
     curPriceLine?: Series;
 }
 
@@ -33,16 +34,16 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
             PriceEndpoints.getPrice(nextProps.token).subscribe(price => {
                 let curPrice = price[price.length - 1]?.y;
                 this.setState({
-                    xDomain: price.length,
-                    data: price.map((v, i) => ({x: i, y: v.y})),
-                    curPriceLine: [{x: 0, y: curPrice}, {x: 10000, y: curPrice}],
+                    xDomain: [minBy(price, 'x').x, maxBy(price, 'x').x],
+                    data: price.map((v, i) => ({x: v.x, y: v.y})),
+                    curPriceLine: [{x: 0, y: curPrice}, {x: Date.now(), y: curPrice}],
                 });
             });
         }
 
         this.setState({
-           line1: [{x: 0, y: this.props.lowerBound}, {x: 10000, y: this.props.lowerBound}],
-           line2: [{x: 0, y: this.props.upperBound}, {x: 10000, y: this.props.upperBound}],
+           line1: [{x: 0, y: this.props.lowerBound}, {x: Date.now(), y: this.props.lowerBound}],
+           line2: [{x: 0, y: this.props.upperBound}, {x: Date.now(), y: this.props.upperBound}],
         });
     }
 
@@ -50,9 +51,10 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
         return (
             <XYPlot
                 width={840}
-                height={250}
+                height={480}
+                margin={{left: 100}}
                 xTime='time'
-                xDomain={[0, this.state.xDomain]}
+                xDomain={this.state.xDomain}
                 className={styles.chart}
             >
                 <XAxis

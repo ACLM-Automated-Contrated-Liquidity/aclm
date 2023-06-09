@@ -5,10 +5,11 @@ import {useRouter} from 'next/router';
 import PairTokensIcon, {TokenIcon} from '../pair-tokens-icon/PairTokensIcon';
 import CreatePositionWindow from './CreatePositionWindow/CreatePositionWindow';
 import {useEffect, useState} from 'react';
+import {abi as CONTRACT_ABI} from '../../interfaces/mumbai-abi.json';
 import {BrowserProvider, Contract, parseEther, parseUnits} from 'ethers';
 import { abi as IUniswapV3PoolABI } from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json';
 import {computePoolAddress, FeeAmount, nearestUsableTick} from '@uniswap/v3-sdk';
-import {MUMBAI_CHAIN_ID, USDC, MATIC, CONTRACT_ABI, PositionInfo, TokenMap} from '../../interfaces/contract';
+import {MUMBAI_CHAIN_ID, USDC, MATIC, PositionInfo, TokenMap} from '../../interfaces/contract';
 import {Token} from '@uniswap/sdk-core';
 
 const CONTRACT_ADDRESS = '0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD';
@@ -20,8 +21,9 @@ export default function Dashboard() {
     const [positions, setPositions] = useState([]);
 
     useEffect(() => {
-        const initBalance = async () => {
+        const init = async () => {
             const provider = new BrowserProvider((window as any).ethereum);
+            const signer = await provider.getSigner();
             const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
             let rawPositions: number[] = await contract.getAllPosition();
             let fullInfo = [];
@@ -29,12 +31,13 @@ export default function Dashboard() {
                 fullInfo = await Promise.all(rawPositions.map(async posId => {
                     return await contract.getPositionInfo(posId);
                 }));
+                fullInfo = fullInfo.filter(x => x[0] === signer.address);
             }
 
             setPositions(fullInfo);
         }
 
-        initBalance()
+        init()
             .catch(console.error);
     }, []);
 
@@ -64,7 +67,7 @@ export default function Dashboard() {
                             <Flex>
                                 <PairTokensIcon token1={token1.icon} token2={token2.icon}></PairTokensIcon>
                                 <Flex direction='column' justifyContent='center' marginLeft='16px'>
-                                    <b>{token1.name}-{token2.name}-LP</b>
+                                    <b>{token1.name}-{token2.name}</b>
                                     <div>Fee {Number(pos[PositionInfo.FEE]) / 10000}%</div>
                                 </Flex>
                             </Flex>

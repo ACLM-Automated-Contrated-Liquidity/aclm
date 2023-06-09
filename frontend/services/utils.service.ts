@@ -41,4 +41,21 @@ export class Utils {
         const tickUpper = nearestUsableTick(Number(slot.tick), Number(spacing)) + Number(spacing) * 20;
         return [tickLower, tickUpper];
     }
+
+    static async computeTicksByTokens(token1: Token, token2: Token, fee: FeeAmount) {
+        const provider = new BrowserProvider((window as any).ethereum);
+        const poolAddr = computePoolAddress({
+            factoryAddress: UNISWAP_FACTORY,
+            tokenA: token1,
+            tokenB: token2,
+            fee: fee,
+        });
+
+        const pool = new Contract(poolAddr, IUniswapV3PoolABI, provider);
+        const slot = await pool.slot0();
+        const spacing = await pool.tickSpacing();
+        const tickLower = nearestUsableTick(Number(slot.tick), Number(spacing)) - Number(spacing) * 20;
+        const tickUpper = nearestUsableTick(Number(slot.tick), Number(spacing)) + Number(spacing) * 20;
+        return [tickLower, tickUpper];
+    }
 }

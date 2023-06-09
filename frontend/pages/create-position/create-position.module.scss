@@ -51,6 +51,17 @@
   stroke: #453899 !important;
 }
 
+.link {
+  color: #453899;
+}
+
+.nftImage {
+  width: 200px;
+  height: 200px;
+  background-image: url("../../public/magic-pool.png");
+  background-size: cover;
+}
+
 .rightPanel {
   position: absolute !important;
   right: 32px;

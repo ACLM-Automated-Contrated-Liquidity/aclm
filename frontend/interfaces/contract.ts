@@ -45,6 +45,11 @@ export const TokenMap = {
     },
 }
 
+export enum NETWORK {
+    MUMBAI = 80001,
+    GOERLI = 5
+}
+
 export const Network = {
     MUMBAI_CHAIN_ID: {
         USDC: "0x0FA8781a83E46826621b3BC094Ea2A0212e71B23",
@@ -98,3 +103,27 @@ export const CONTRACT_ABI = [
         "type": "function",
     }
 ];
+
+export const GEORLY_ABI = [
+    {"inputs": [
+            {"internalType":"address","name":"token0","type":"address"},
+            {"internalType":"address","name":"token1","type":"address"},
+            {"internalType":"uint24","name":"fee","type":"uint24"},
+            {"internalType":"uint","name":"amount0","type":"uint"},
+            {"internalType":"uint","name":"amount1","type":"uint"},
+            {"internalType":"int24","name":"tickLower","type":"int24"},
+            {"internalType":"int24","name":"tickUpper","type":"int24"},
+        ],
+        "name": "invest",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+    },
+    {
+        "inputs":[],
+        "name":"wrapAll",
+        "outputs":[],
+        "stateMutability":"nonpayable",
+        "type":"function"
+    },
+]
