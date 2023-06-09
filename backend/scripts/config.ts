@@ -31,7 +31,7 @@ export const NetAddrs: { [k: string]: NetworkAddresses } = {
     goerli: {
         WETH: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
         DAI: "0x11fe4b6ae13d2a6055c8d9cf65c55bac32b5d844",
-        USDC: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        USDC: "0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4",
         poolFactory: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
         swapRouter: "0xE592427A0AEce92De3Edee1F18E0157C05861564",
     },

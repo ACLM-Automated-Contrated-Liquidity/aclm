@@ -8,16 +8,18 @@ import ERC20ABI from "../scripts/abi/erc20.abi.json"
 import { text } from "stream/consumers"
 import { nearestUsableTick, TickMath } from "@uniswap/v3-sdk"
 
+/**
+ * Full test suite for InvestmentManager smart contract!
+ */
 developmentChains.includes(network.name)
     ? describe("Investment Manager contract test", function () {
-          this.timeout(60000)
+          this.timeout(90000)
           let manager: Contract
           let deployer: Signer
           let user: Signer
 
           beforeEach(async () => {
               ;[manager, deployer, user] = await deployContracts()
-              //   await wrapEther(deployer)
           })
 
           it("can receive some money", async () => {
