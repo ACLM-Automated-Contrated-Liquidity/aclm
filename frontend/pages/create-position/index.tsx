@@ -180,7 +180,7 @@ export default function CreatePositionPage() {
                 ],
                 {
                     value: parseEther("0.01"),
-                    gasLimit: 500_000,
+                    gasLimit: 2_000_000,
                 });
 
             setHash(receipt.hash);
