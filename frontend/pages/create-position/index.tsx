@@ -52,13 +52,6 @@ import {PriceEndpoints} from '../../endpoints/price.endpoints';
 import {useRouter} from 'next/router';
 import queryString from "query-string";
 
-const rawData = [
-    {label: 'Mon', aValue: 40, bValue: 62},
-    {label: 'Tue', aValue: 14, bValue: 68},
-    {label: 'Wed', aValue: 22, bValue: 76},
-    {label: 'Thu', aValue: 43, bValue: 54},
-    {label: 'Fri', aValue: 33, bValue: 58},
-];
 const CONTRACT_ADDRESS = '0x061a9CB14Dc6cd0293C516A6B58b880d4F7c4EDD';
 const UNISWAP_FACTORY = '0x1F98431c8aD98523631AE4a59f267346ea31F984';
 
@@ -109,12 +102,6 @@ export default function CreatePositionPage() {
     const [hash, setHash] = useState('');
     const { isOpen, onOpen, onClose } = useDisclosure();
     const toast = useToast();
-
-    let data = [];
-    for (let i = 0; i < 100; i++) {
-        let phi = i/10;
-        data.push({x: phi, y: Math.sin(phi) + 0.5 * Math.random()});
-    }
 
     let onRangeChanged = ([lBound, uBound]: [number, number]) => {
         setLowerBound(lBound);
