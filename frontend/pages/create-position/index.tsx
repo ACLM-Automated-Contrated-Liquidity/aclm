@@ -69,22 +69,22 @@ const POOLS_MAP = {
     ],
 }
 
-async function computeTicks(addr1: string, addr2: string, fee: number) {
-    const provider = new BrowserProvider((window as any).ethereum);
-    const poolAddr = computePoolAddress({
-        factoryAddress: UNISWAP_FACTORY,
-        tokenA: new Token(USDC.chainId, USDC.address, 6),
-        tokenB: new Token(MATIC.chainId, MATIC.address, 18),
-        fee: FeeAmount.MEDIUM,
-    });
-
-    const pool = new Contract(poolAddr, IUniswapV3PoolABI, provider);
-    const slot = await pool.slot0();
-    const spacing = await pool.tickSpacing();
-    const tickLower = nearestUsableTick(Number(slot.tick), Number(spacing)) - Number(spacing) * 20;
-    const tickUpper = nearestUsableTick(Number(slot.tick), Number(spacing)) + Number(spacing) * 20;
-    return [tickLower, tickUpper];
-}
+// async function computeTicks(addr1: string, addr2: string, fee: number) {
+//     const provider = new BrowserProvider((window as any).ethereum);
+//     const poolAddr = computePoolAddress({
+//         factoryAddress: UNISWAP_FACTORY,
+//         tokenA: new Token(USDC.chainId, USDC.address, 6),
+//         tokenB: new Token(MATIC.chainId, MATIC.address, 18),
+//         fee: FeeAmount.MEDIUM,
+//     });
+//
+//     const pool = new Contract(poolAddr, IUniswapV3PoolABI, provider);
+//     const slot = await pool.slot0();
+//     const spacing = await pool.tickSpacing();
+//     const tickLower = nearestUsableTick(Number(slot.tick), Number(spacing)) - Number(spacing) * 20;
+//     const tickUpper = nearestUsableTick(Number(slot.tick), Number(spacing)) + Number(spacing) * 20;
+//     return [tickLower, tickUpper];
+// }
 
 export default function CreatePositionPage() {
     const router = useRouter();
@@ -156,7 +156,8 @@ export default function CreatePositionPage() {
 
             let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-            let [tick1, tick2] = await computeTicks(null, null, 3000);
+            // let [tick1, tick2] = await computeTicks(null, null, 3000);
+            let [tick1, tick2] = [0, 0];
 
             // Create the transaction
             const receipt = await contract.invest([
