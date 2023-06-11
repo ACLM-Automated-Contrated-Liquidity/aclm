@@ -69,7 +69,6 @@ next-env.d.ts
 
 # Lock files
 package-lock.json
-yarn.lock
 
 templates/evm/core/pages/api
 
