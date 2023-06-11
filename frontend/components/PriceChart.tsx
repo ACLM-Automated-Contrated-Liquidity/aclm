@@ -33,10 +33,15 @@ export class PriceChart extends Component<PriceChartProps, PriceChartState> {
 
             PriceEndpoints.getPrice(nextProps.token).subscribe(price => {
                 let curPrice = price[price.length - 1]?.y;
+                let xRange: [number, number] = [(minBy(price, 'x') as any).x, (maxBy(price, 'x') as any).x];
+                let yRange: [number, number] = [(minBy(price, 'y') as any).y, (maxBy(price, 'y') as any).y];
+
                 this.setState({
-                    xDomain: [(minBy(price, 'x') as any).x, (maxBy(price, 'x') as any).x],
+                    xDomain: xRange,
                     data: price.map((v, i) => ({x: v.x, y: v.y})),
                     curPriceLine: [{x: 0, y: curPrice}, {x: Date.now(), y: curPrice}],
+                    line1: [{x: 0, y: yRange[0]}, {x: Date.now(), y: yRange[0]}],
+                    line2: [{x: 0, y: yRange[1]}, {x: Date.now(), y: yRange[1]}],
                 });
             });
         }
