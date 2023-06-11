@@ -155,18 +155,6 @@ interface InvestmentManager {
      */
     function removePosition(uint tokenId) external returns (MintedPosition memory);
 
-    /**
-     * Converts specified amount back to native coin.
-     * Error if user's balance of wrapped token is less than amount.
-     * @param amount - amount to unwrap back to native coin
-     */
-    function unwrap(uint amount) external;
-
-    /**
-     * Converts all available wrapped token of user to native coin.
-     */
-    function unwrapAll() external;
-
     function withdrawToken(address token) external;
 
     /**

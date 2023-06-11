@@ -1,6 +1,7 @@
 import "@nomicfoundation/hardhat-toolbox"
 import { HardhatUserConfig } from "hardhat/config"
 require("dotenv").config()
+// import "solidity-coverage"
 
 export const developmentChains = ["hardhat", "localhost"]
 
