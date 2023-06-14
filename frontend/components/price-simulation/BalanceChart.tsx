@@ -12,22 +12,6 @@ export interface BalanceChartProps {
 export interface BalanceChartState {
     data: {x: number, y: number}[];
 }
-// enum QueryPeriodEnum {
-//     ONE_DAY = "1",
-//     ONE_WEEK = "7",
-//     ONE_MONTH = "30",
-//     THREE_MONTH = "90",
-//     ONE_YEAR = "90",
-//     MAX = "max",
-// }
-// interface Token {
-//     id: string;
-//     name: string;
-// }
-// interface Price {
-//     timestamp: number;
-//     value: number;
-// }
 
 export class BalanceChart extends Component<BalanceChartProps, BalanceChartState> {
 
@@ -37,10 +21,6 @@ export class BalanceChart extends Component<BalanceChartProps, BalanceChartState
     }
 
     componentDidMount() {
-        // PriceEndpoints.getPrice()
-        //     .subscribe(() => {
-        //
-        // ``  });
     }
 
     componentWillReceiveProps() {

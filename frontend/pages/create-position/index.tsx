@@ -118,6 +118,8 @@ export default function CreatePositionPage() {
     useEffect(() => {
         const init = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
+            if (!provider) return;
+
             let {chainId} = await provider.getNetwork();
             setNetwork(Number(chainId));
 
@@ -152,6 +154,8 @@ export default function CreatePositionPage() {
     const invest = () => {
         const investFn = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
+            if (!provider) return;
+
             let signer = await provider.getSigner();
 
             let contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);

@@ -51,12 +51,14 @@ export default function AppComponent() {
 
     useEffect(function onFirstMount() {
         let wallet = (window as any).ethereum;
-        wallet.on('chainChanged', (chainId: string) => {
+        wallet?.on('chainChanged', (chainId: string) => {
             setPools(POOLS_MAP[parseInt(chainId, 16)]);
         });
 
         const init = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
+            if (!provider) return;
+
             let signer = await provider.getSigner();
             const {chainId} = await provider.getNetwork();
             let addr = signer.address;
@@ -68,12 +70,14 @@ export default function AppComponent() {
 
         const initBalance = async () => {
             let provider = new BrowserProvider(wallet);
-            let balance = await provider.getBalance("0x56AcC95b7Cbd8fe267EF6ec9DA565D2A8708E809")
+            if (!provider) return;
 
+            let balance = await provider.getBalance("0x56AcC95b7Cbd8fe267EF6ec9DA565D2A8708E809")
             setBalance(formatEther(balance));
         }
 
-        init();
+        init()
+            .catch(console.error);
         initBalance()
             .catch(console.error);
     }, []);
@@ -81,6 +85,7 @@ export default function AppComponent() {
     const sendToGoerli = () => {
         let investFn = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
+            if (!provider) return;
             let signer = await provider.getSigner();
 
             let contract = new EthersContract(GOERLI_CONTRACT, GOERLI_ABI, signer);
@@ -140,6 +145,9 @@ export default function AppComponent() {
 
                 <b>Available pools:</b>
                 <Wrap spacing='32px' marginTop='8px' overflow='visible'>
+                    {!pools.length &&
+                        <Box display='flex' justifyContent='center'>Connect your wallet to see available pools</Box>
+                    }
                     {pools?.map((pool, i) => {
                             return (
                                 <Card

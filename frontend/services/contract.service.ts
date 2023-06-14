@@ -8,8 +8,9 @@ export class Contract {
     static invest() {
         let investFn = async () => {
             let provider = new BrowserProvider((window as any).ethereum);
-            let signer = await provider.getSigner();
+            if (!provider) return;
 
+            let signer = await provider.getSigner();
             let contract = new EthersContract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
             let [tick1, tick2] = await Utils.computeTicks(null, null, 3000);
@@ -26,15 +27,6 @@ export class Contract {
                 });
 
             const tx = await receipt.wait();
-
-            // toast({
-            //     position: 'bottom-left',
-            //     render: () => (
-            //         <Box color='white' p={3} bg='blue.500'>
-            //             <YOUR_LINK_HERE>
-            //         </Box>
-            //     ),
-            // });
         }
 
         investFn()

@@ -27,6 +27,8 @@ export default function Dashboard() {
     useEffect(() => {
         const init = async () => {
             const provider = new BrowserProvider((window as any).ethereum);
+            if (!provider) return;
+
             const signer = await provider.getSigner();
             const {chainId} = await provider.getNetwork();
             const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
