@@ -2,6 +2,10 @@ import { ethers } from "hardhat"
 import hre from "hardhat"
 import { NetAddrs } from "../config"
 
+/**
+ * VERSE-WETH pool exists only on mainnet.
+ * So creating it on Goerli
+ */
 async function main() {
     const networkName = hre.network.name
     const curConfig = NetAddrs[networkName]
@@ -16,9 +20,9 @@ async function main() {
         "IUniswapV3Factory",
         NetAddrs[networkName].poolFactory
     )
-    // const createTx = await factory.createPool(VERSE_ADDRESS, WETH_ADDRESS, 10000)
-    // const rec = await createTx.wait()
-    // console.log(`Create pool tx: ${rec.transactionHash}`)
+    const createTx = await factory.createPool(VERSE_ADDRESS, WETH_ADDRESS, 10000)
+    const rec = await createTx.wait()
+    console.log(`Create pool tx: ${rec.transactionHash}`)
 
     const poolAddr = await factory.getPool(VERSE_ADDRESS, WETH_ADDRESS, 10000)
 

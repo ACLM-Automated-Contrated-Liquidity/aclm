@@ -136,7 +136,6 @@ export const getPositionTokensDepositRatio = (P: number, Pl: number, Pu: number)
     return deltaY / deltaX
 }
 
-// for calculation detail, please visit README.md (Section: Calculation Breakdown, No. 1)
 interface TokensAmount {
     amount0: number
     amount1: number
@@ -179,7 +178,6 @@ export const getTokenAmountsFromDepositSimple = (
     return { amount0: deltaX, amount1: deltaY }
 }
 
-// for calculation detail, please visit README.md (Section: Calculation Breakdown, No. 2)
 const getLiquidityForAmount0 = (sqrtRatioAX96: bn, sqrtRatioBX96: bn, amount0: bn): bn => {
     // amount0 * (sqrt(upper) * sqrt(lower)) / (sqrt(upper) - sqrt(lower))
     const intermediate = mulDiv(sqrtRatioBX96, sqrtRatioAX96, Q96)
@@ -258,7 +256,6 @@ export const getLiquidityFromTick = (poolTicks: Tick[], tick: number): bn => {
     return liquidity
 }
 
-// private helper functions
 const encodeSqrtPriceX96 = (price: number | string | bn): bn => {
     return new bn(price).sqrt().times(Q96)
 }

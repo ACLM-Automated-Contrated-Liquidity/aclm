@@ -505,20 +505,6 @@ contract InvestmentManagerImpl is InvestmentManager, AutomationCompatibleInterfa
             );
     }
 
-    function unwrap(uint amount) external override {
-        require(
-            _getTokenUserBalance(nativeWrapperContract, msg.sender) >= amount,
-            "Amount shouldn't be bigger than balance!"
-        );
-        WrappedToken(nativeWrapperContract).withdraw(amount);
-    }
-
-    function unwrapAll() external override {
-        WrappedToken(nativeWrapperContract).withdraw(
-            _getTokenUserBalance(nativeWrapperContract, msg.sender)
-        );
-    }
-
     function withdrawToken(address token) external override {
         uint tokenBalance = _getTokenUserBalance(token, msg.sender);
         console.log("Token balance to withdraw: %s", tokenBalance);

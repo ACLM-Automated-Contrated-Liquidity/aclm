@@ -5,22 +5,26 @@ pragma abicoder v2;
 interface InvestmentManager {
     receive() external payable;
 
-    /**
-     * Single button, one transaction function to deposit, swap and mint best position in a pool.
-     * @param otherToken - ERC20 second token of the intended pool.
-     * @param fee - pool fee basic points ( 100, 500, 3000 or 10000)
-     * @param rangePercent100 - desired price range from 1 to 10000 ( 1 means 0,01% and 10000 means 100%)
-     */
     struct InvestmentParams {
+        // Contract address of the first token
         address token0;
+        // Contract address of the second token
         address token1;
+        // Pool fee basis points. Required to find specific pool
         uint24 fee;
+        // Amount of token0 in target position
         uint amount0;
+        // Amount of token1 in target position
         uint amount1;
+        /* Position boundaries. 
+        Depends on current pool price and needs to be calculated on caller side. */
         int24 tickLower;
         int24 tickUpper;
     }
 
+    /**
+     * Single button, one transaction function to deposit, swap and mint best position in a pool.
+     */
     function invest(InvestmentParams memory params) external payable;
 
     /**
@@ -154,18 +158,6 @@ interface InvestmentManager {
      * @param tokenId - position ID to be removed.
      */
     function removePosition(uint tokenId) external returns (MintedPosition memory);
-
-    /**
-     * Converts specified amount back to native coin.
-     * Error if user's balance of wrapped token is less than amount.
-     * @param amount - amount to unwrap back to native coin
-     */
-    function unwrap(uint amount) external;
-
-    /**
-     * Converts all available wrapped token of user to native coin.
-     */
-    function unwrapAll() external;
 
     function withdrawToken(address token) external;
 

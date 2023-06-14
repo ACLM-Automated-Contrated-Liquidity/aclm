@@ -1,4 +1,3 @@
-import { string } from "hardhat/internal/core/params/argumentTypes"
 import { Network } from "../interfaces/uniswap.interface"
 
 // https://github.com/Uniswap/interface/blob/main/src/constants/chains.ts
